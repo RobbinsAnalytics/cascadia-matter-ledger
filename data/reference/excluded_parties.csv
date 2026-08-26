@@ -1,0 +1,58 @@
+match_token,affiliation,note
+t-mobile,T-Mobile US,The subject company. Primary exclusion.
+tmobile,T-Mobile US,Unhyphenated form.
+t mobile,T-Mobile US,Space-separated form.
+voicestream,T-Mobile US,T-Mobile USA predecessor; acquired by Deutsche Telekom 2001.
+omnipoint,T-Mobile US,VoiceStream predecessor.
+powertel,T-Mobile US,VoiceStream predecessor.
+metropcs,T-Mobile US,Merged with T-Mobile USA 2013.
+metro pcs,T-Mobile US,Spaced form.
+sprint,T-Mobile US,Merged into T-Mobile 2020. Sam Nicholson's prior employer.
+nextel,T-Mobile US,Sprint Nextel; merged lineage.
+boost mobile,T-Mobile US / DISH,Divested to DISH 2020; excluded on both lineages.
+virgin mobile,T-Mobile US,Sprint prepaid brand.
+assurance wireless,T-Mobile US,Sprint Lifeline brand.
+deutsche telekom,T-Mobile US,Parent.
+at&t,AT&T,Carrier.
+at and t,AT&T,Spelled form.
+american telephone,AT&T,Historic name.
+new cingular wireless,AT&T,AT&T Mobility operating entity. Does not contain the brand.
+cingular,AT&T,Predecessor brand.
+ameritech,AT&T,RBOC predecessor.
+bellsouth,AT&T,RBOC predecessor.
+pacific bell,AT&T,RBOC predecessor.
+southwestern bell,AT&T,RBOC predecessor.
+sbc communications,AT&T,Predecessor.
+cricket wireless,AT&T,Prepaid brand.
+directv,AT&T,Affiliate during the relevant period.
+verizon,Verizon,Carrier.
+cellco partnership,Verizon,Verizon Wireless operating entity. Does not contain the brand.
+bell atlantic,Verizon,Predecessor.
+nynex,Verizon,Predecessor.
+gte corp,Verizon,Predecessor.
+mci,Verizon,Acquired 2006.
+worldcom,Verizon,MCI predecessor.
+tracfone,Verizon,Acquired 2021.
+straight talk,Verizon,TracFone brand.
+us cellular,UScellular,Carrier.
+united states cellular,UScellular,Full form.
+dish network,DISH / EchoStar,Carrier.
+echostar,DISH / EchoStar,Parent.
+centurylink,Lumen,Carrier.
+lumen technologies,Lumen,Carrier.
+qwest,Lumen,Predecessor.
+embarq,Lumen,Predecessor.
+level 3,Lumen,Predecessor.
+frontier communications,Frontier,Carrier.
+windstream,Windstream,Carrier.
+consolidated communications,Consolidated,Carrier.
+comcast,Comcast,Cable and mobile carrier.
+charter communications,Charter,Cable and mobile carrier.
+spectrum,Charter,Brand. Broad token - see note in subject-matter-filter.md.
+time warner cable,Charter,Predecessor.
+cox communications,Cox,Cable and mobile carrier.
+altice,Altice USA,Cable and mobile carrier.
+cablevision,Altice USA,Predecessor.
+alltel,Historic,Carrier; absorbed by Verizon and AT&T.
+cellular one,Historic,Carrier brand.
+airtouch,Historic,Carrier; Verizon Wireless lineage.

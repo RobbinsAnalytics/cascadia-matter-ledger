@@ -1,0 +1,23 @@
+code,description,effective_from_sy,effective_to_sy,observed_rows,window,codebook_status
+0,transfer to another district,1988,2026,294835,full,documented
+1,remanded to state court,1988,2026,265808,full,documented
+2,want of prosecution,1988,2026,319448,full,documented
+3,lack of jurisdiction,1988,2026,245672,full,documented
+4,default,1988,2026,385503,full,documented
+5,consent,1988,2026,152973,full,documented
+6,motion before trial,1988,2026,1282430,full,documented
+7,jury verdict,1988,2026,96175,full,documented
+8,directed verdict,1988,2026,8741,full,documented
+9,court trial,1988,2026,55820,full,documented
+-8,(not in this codebook revision),1996,1997,5,full,missing marker
+10,multi district litigation transfer,1988,2026,233806,full,documented
+11,remanded to U.S. Agency,1988,2026,191197,full,documented
+12,voluntarily,1988,2026,1531241,full,documented
+13,settled,1988,2026,2517158,full,documented
+14,other,1988,2026,1999488,full,documented
+15,award of arbitrator,1988,2026,8930,full,documented
+16,stayed pending bankruptcy,1988,2026,11147,full,documented
+17,other,1988,2026,438260,full,documented
+18,statistical closing,1988,2026,252533,full,documented
+19,appeal affirmed (magistrate judge),1991,2026,116776,bounded,documented
+20,appeal denied (magistrate judge),1991,2026,72184,bounded,documented

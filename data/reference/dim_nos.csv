@@ -1,0 +1,114 @@
+code,description,effective_from_sy,effective_to_sy,observed_rows,window,codebook_status
+110,Insurance,1988,2026,377374,full,documented
+120,Marine Contract Actions,1988,2026,72911,full,documented
+130,Miller Act,1988,2026,23249,full,documented
+140,Negotiable Instruments,1988,2026,42256,full,documented
+150,Overpayments & Enforcement of Judgments,1988,2026,15993,full,documented
+151,Overpayments under the Medicare Act,1988,2026,5038,full,documented
+152,Recovery of Defaulted Student Loans,1988,2026,167034,full,documented
+153,Recovery of Overpayments of Vet Benefits,1988,2026,46528,full,documented
+160,Stockholder's Suits,1988,2026,12361,full,documented
+190,Other Contract Actions,1988,2026,597444,full,documented
+195,Contract Product Liability,1988,2026,13741,full,documented
+196,Franchise,2005,2026,6442,bounded,documented
+210,Land Condemnation,1988,2026,16917,full,documented
+220,Foreclosure,1988,2026,174653,full,documented
+230,"Rent, Lease, Ejectment",1988,2026,18519,full,documented
+240,Torts to Land,1988,2026,14053,full,documented
+245,Real Property Product Liability,1988,2026,7929,full,documented
+290,Other Real Property Actions,1988,2026,51154,full,documented
+310,Airplane Personal Injury,1988,2026,18442,full,documented
+315,Airplane Product Liability,1988,2026,4362,full,documented
+320,"Assault, Libel, and Slander",1988,2026,25876,full,documented
+330,Federal Employers' Liability,1988,2026,44122,full,documented
+340,Marine Personal Injury,1988,2026,75524,full,documented
+345,Marine Product Liability,1988,2026,1751,full,documented
+350,Motor Vehicle Personal Injury,1988,2026,191270,full,documented
+355,Motor Vehicle Product Liability,1988,2026,18187,full,documented
+360,Other Personal Injury,1988,2026,348123,full,documented
+362,Medical Malpractice,1988,2026,49131,full,documented
+365,Personal Injury - Product Liability,1988,2026,1033200,full,documented
+367,Health Care / Pharma,2012,2026,181958,bounded,documented
+368,Asbestos Personal Injury - Prod.liab.,1988,2026,360533,full,documented
+370,Other Fraud,1988,2026,73284,full,documented
+371,Truth in Lending,1988,2026,16148,full,documented
+375,False Claims Act,2012,2026,6402,bounded,documented
+376,Qui Tam False Claims Act,2016,2026,4563,bounded,documented
+380,Other Personal Property Damage,1988,2026,69428,full,documented
+385,Property Damage - Product Liabilty,1988,2026,22025,full,documented
+400,State Reapportionment,1988,2026,265,full,documented
+410,Antitrust,1988,2026,26590,full,documented
+420,(not in this codebook revision),1988,1990,13,full,undocumented
+421,(not in this codebook revision),1988,1990,23,full,undocumented
+422,Bankruptcy Appeals Rule 28 USC 158,1988,2026,106287,full,documented
+423,Bankruptcy Withdrawal 28 USC 157,1988,2026,25651,full,documented
+430,Banks and Banking,1988,2026,14945,full,documented
+440,Other Civil Rights,1988,2026,601813,full,documented
+441,Civil Rights Voting,1988,2026,6743,full,documented
+442,Civil Rights Employment,1988,2026,572011,full,documented
+443,Civil Rights Accommodations,1988,2026,31080,full,documented
+444,(not in this codebook revision),1988,2016,2238,bounded,undocumented
+445,Americans with Disabilities Act - Employment,2005,2026,40737,bounded,documented
+446,Americans with Disabilities Act - Other,2005,2026,129775,bounded,documented
+448,Education,2012,2026,8638,bounded,documented
+450,Interstate Commerce,1988,2026,24837,full,documented
+460,Deportation,1988,2026,3769,full,documented
+462,"Naturalization, Petition For Hearing of Denial",2008,2026,6465,bounded,documented
+463,Habeas Corpus - Alien Detainee,2008,2026,54328,bounded,documented
+465,Other Immigration Actions,2008,2026,60984,bounded,documented
+470,Civil (Rico),1988,2026,33121,full,documented
+480,Consumer Credit,2005,2026,172023,bounded,documented
+485,Telephone Consumer Protection Act,2019,2026,8509,bounded,documented
+490,Cable/ Satellite TV,2005,2026,15796,bounded,documented
+510,Prisoner Petitions - Vacate Sentence,1988,2026,239180,full,documented
+530,Prisoner Petitions - Habeas Corpus,1988,2026,691616,full,documented
+535,Habeas Corpus - Death Penalty,1989,2026,6374,bounded,documented
+540,Prisoner Petitions - Mandamus and Other,1988,2026,43833,full,documented
+550,Prisoner - Civil Rights,1988,2026,811894,full,documented
+555,Prisoner - Prison Condition,1997,2026,275497,bounded,documented
+560,Civil Detainee,2012,2026,3163,bounded,documented
+610,(not in this codebook revision),1988,2017,1984,bounded,undocumented
+620,(not in this codebook revision),1988,2014,6805,bounded,undocumented
+625,Drug Related Seizure of Property,1990,2026,38999,bounded,documented
+630,(not in this codebook revision),1988,2012,73,full,undocumented
+640,(not in this codebook revision),1988,2012,300,bounded,undocumented
+650,(not in this codebook revision),1988,2013,660,bounded,undocumented
+660,(not in this codebook revision),1988,2013,647,bounded,undocumented
+690,Other Forfeiture and Penalty Suits,1988,2026,43741,full,documented
+710,Fair Labor Standards Act,1988,2026,169295,full,documented
+720,Labor Management Relations Act,1988,2026,53211,full,documented
+730,(not in this codebook revision),1988,2016,3183,bounded,undocumented
+740,Railway Labor Act,1988,2026,4326,full,documented
+751,FMLA,2012,2026,14564,bounded,documented
+790,Other Labor Litigation,1988,2026,53542,full,documented
+791,Employee Retirement Income Security Act (ERISA),1988,2026,322088,full,documented
+810,(not in this codebook revision),1988,2014,194,bounded,undocumented
+820,Copyright,1988,2026,135046,full,documented
+830,Patent,1988,2026,115498,full,documented
+835,Patent--Abbreviated New Drug Application,2017,2026,2256,bounded,documented
+840,Trademark,1988,2026,124638,full,documented
+850,"Securities, Commodities, Exchange",1988,2026,76331,full,documented
+860,(not in this codebook revision),1988,1991,48,full,undocumented
+861,Social Security - HIA (1395 ff),1988,2026,3869,full,documented
+862,Social Security - Black Lung (923),1988,2025,444,bounded,documented
+863,Social Security - DIWC/DIWW (405(g)),1988,2026,299409,full,documented
+864,Social Security - SSID Title XVI,1988,2026,245709,full,documented
+865,Social Security - RSI (405(g)),1988,2026,26280,full,documented
+870,Tax Suits,1988,2026,51590,full,documented
+871,IRS 3rd Party Suits 26 USC 7609 (U.S. plaintiff),1988,2026,3703,full,documented
+875,(not in this codebook revision),1988,2014,544,bounded,undocumented
+880,Defend Trade Secrets Act,2021,2026,3007,bounded,documented
+890,Other Statutory Actions,1988,2026,348292,full,documented
+891,Agricultural Acts,1988,2026,11474,full,documented
+892,(not in this codebook revision),1988,2014,256,bounded,undocumented
+893,Environmental Matters,1988,2026,35738,full,documented
+894,(not in this codebook revision),1988,2011,166,bounded,undocumented
+895,Freedom of Information Act of 1974,1988,2026,17454,full,documented
+896,Arbitration,2012,2026,12115,bounded,documented
+899,APA Review/Appeal,2012,2026,12165,bounded,documented
+900,(not in this codebook revision),1988,2013,139,bounded,undocumented
+910,(not in this codebook revision),1988,1995,31,full,undocumented
+930,(not in this codebook revision),1989,1994,2,full,undocumented
+950,Constitutionality of State Statutes,1988,2026,12748,full,documented
+990,(not in this codebook revision),1988,2011,1421,bounded,undocumented
+992,(not in this codebook revision),1988,1992,22,full,undocumented

@@ -1,0 +1,15 @@
+code,description,effective_from_sy,effective_to_sy,observed_rows,window,codebook_status
+1,no court action,1988,2026,1383712,full,documented
+2,order entered,1988,2026,2685353,full,documented
+3,no court action,1988,2026,697972,full,documented
+4,judgement on motion,1988,2026,1506552,full,documented
+5,pretrial conference held,1988,2026,1001400,full,documented
+6,during court trial,1988,2026,11257,full,documented
+7,during jury trial,1988,2026,21206,full,documented
+8,after court trial,1988,2026,64181,full,documented
+9,after jury trial,1988,2026,97089,full,documented
+-8,(not in this codebook revision),1996,1997,5,full,missing marker
+10,other,1988,2026,2296562,full,documented
+11,hearing held,1988,2026,62319,full,documented
+12,order decided,1988,2026,647164,full,documented
+13,request for trial de novo after,1989,2026,5358,bounded,documented

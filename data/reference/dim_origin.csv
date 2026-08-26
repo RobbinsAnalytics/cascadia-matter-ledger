@@ -1,0 +1,15 @@
+code,description,effective_from_sy,effective_to_sy,observed_rows,window,codebook_status
+1,original proceeding,1988,2026,7709402,full,documented
+2,"removed (began in the state court, removed to the district",1988,2026,1247157,full,documented
+3,remanded for further action (removal from court of appeals),1988,2026,30406,full,documented
+4,"reinstated/reopened (previously opened and closed, reopened for",1988,2026,372473,full,documented
+5,transferred from another district(pursuant to 28 USC 1404),1988,2026,199348,full,documented
+6,multi district litigation (cases transferred to this district by,1988,2026,355820,full,documented
+7,appeal to a district judge of a magistrate judge's decision,1988,2011,1906,bounded,documented
+8,second reopen,1988,2026,28821,full,documented
+9,third reopen,1988,2026,3886,full,documented
+-8,(not in this codebook revision),1989,1996,550,bounded,missing marker
+10,fourth reopen,1988,2026,953,full,documented
+11,fifth reopen,1997,2026,485,bounded,documented
+12,sixth reopen,1997,2026,200,bounded,documented
+13,multi district litigation originating in the district (valid,2016,2026,528723,bounded,documented

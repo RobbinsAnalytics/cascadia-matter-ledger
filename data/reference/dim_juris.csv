@@ -1,0 +1,7 @@
+code,description,effective_from_sy,effective_to_sy,observed_rows,window,codebook_status
+1,US government plaintiff,1988,2026,561524,full,documented
+2,US government defendant,1988,2026,1440902,full,documented
+3,federal question,1988,2026,5371534,full,documented
+4,diversity of citizenship,1988,2026,3100488,full,documented
+5,local question,1988,2026,5681,full,documented
+-8,(not in this codebook revision),1992,1992,1,full,missing marker

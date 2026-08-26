@@ -1,0 +1,4 @@
+code,description,effective_from_sy,effective_to_sy,observed_rows,window,codebook_status
+,(not in this codebook revision),1988,2000,3183081,bounded,"absent, undocumented state"
+L,terminated record,2001,2026,7297049,bounded,documented
+S,pending record,,,0,none,"documented, never observed"
