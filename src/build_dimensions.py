@@ -92,6 +92,29 @@ def codebook_text():
     return "\n".join(page.extract_text() or "" for page in reader.pages)
 
 
+def parse_procprog_groups(text):
+    """PROCPROG codes are only meaningful inside their group.
+
+    Codes 1 and 3 both read "no court action" and they are not the same state:
+    one is before issue was joined, the other after. The codebook carries the
+    distinction as "a) before issue joined" / "b) after issued joined" headers
+    above the code lists, and a dimension that keeps only code and description
+    silently merges 379,357 matters in this slice into one ambiguous label.
+    """
+    i = text.find("PROCEDURAL PROGRESS \n(PROCPROG)")
+    segment = text[i:text.find("See Appendix A", i)]
+    groups, current = {}, ""
+    for line in segment.splitlines():
+        header = re.match(r"\s*[ab]\)\s*(.+?)\s*$", line)
+        if header:
+            current = header.group(1).strip()
+            continue
+        m = re.match(r"^\s*(\d{1,2})\s*" + DASH + r"+\s*\S", line)
+        if m and current:
+            groups.setdefault(m.group(1), current)
+    return groups
+
+
 def parse_field(text, start, end, pattern):
     i = text.find(start)
     if i < 0:
@@ -137,6 +160,8 @@ def main():
               "sentinel_rows": 0, "undocumented_states": 0,
               "undocumented_state_rows": 0}
 
+    procprog_groups = parse_procprog_groups(text)
+
     for field, (start, end, pattern) in SPECS.items():
         documented = parse_field(text, start, end, pattern)
         observed = presence["coded_fields"][field]
@@ -159,7 +184,7 @@ def main():
                 status = "documented"
             else:
                 status = "undocumented"
-            rows.append({
+            row = {
                 "code": code,
                 "description": documented.get(
                     code, "(not in this codebook revision)"),
@@ -169,7 +194,13 @@ def main():
                 "window": ("bounded" if is_bounded
                            else ("full" if first else "none")),
                 "codebook_status": status,
-            })
+            }
+            if field == "PROCPROG":
+                row["group"] = procprog_groups.get(code, "")
+                row["qualified_description"] = (
+                    "%s, %s" % (row["description"], row["group"])
+                    if row["group"] else row["description"])
+            rows.append(row)
             if is_bounded and code not in SENTINELS:
                 bounded.append((code, first, last, n))
             if status == "undocumented":

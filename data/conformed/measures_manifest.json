@@ -1,0 +1,61 @@
+{
+ "built_utc": "2026-08-26T23:06:42+00:00",
+ "as_of_date": "2026-08-26",
+ "measures": {
+  "m01_time_to_termination_by_nos": {
+   "rows": 12,
+   "columns": [
+    "nature_of_suit_code",
+    "nature_of_suit",
+    "closed_matters",
+    "median_days",
+    "p25_days",
+    "p75_days"
+   ]
+  },
+  "m01_time_to_termination_by_court": {
+   "rows": 92,
+   "columns": [
+    "court_code",
+    "closed_matters",
+    "median_days"
+   ]
+  },
+  "m02_disposition_mix": {
+   "rows": 21,
+   "columns": [
+    "disposition_code",
+    "disposition",
+    "closed_matters",
+    "pct"
+   ]
+  },
+  "m03_procedural_progress": {
+   "rows": 13,
+   "columns": [
+    "procedural_progress_code",
+    "procedural_progress",
+    "issue_joined_group",
+    "closed_matters",
+    "pct",
+    "median_days"
+   ]
+  },
+  "m04_filing_volume_by_year": {
+   "rows": 451,
+   "columns": [
+    "filed_year",
+    "nature_of_suit_code",
+    "matters_filed"
+   ]
+  },
+  "m05_open_inventory_aging": {
+   "rows": 5,
+   "columns": [
+    "age_band",
+    "open_matters",
+    "pct"
+   ]
+  }
+ }
+}
