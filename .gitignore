@@ -31,3 +31,8 @@ Thumbs.db
 data/raw/cv88on.zip
 data/raw/*.txt
 data/raw/*.part
+
+# The conformed database is a derived artifact, rebuilt from the freeze
+# by src/build_conformed.py. Large, and reproducible -- not committed.
+data/conformed/*.duckdb
+data/raw/cv88on.utf8.txt

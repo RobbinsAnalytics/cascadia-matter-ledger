@@ -1,0 +1,122 @@
+{
+ "started_utc": "2026-08-26T23:01:56+00:00",
+ "freeze_sha256": "74405231a9a3c246c7090d471a1525924fa5afb513ff22b4dc0f4babbac7223d",
+ "checks": [
+  {
+   "check": "rows in frozen snapshot",
+   "value": 10960173,
+   "expectation": 10960173,
+   "passed": true
+  },
+  {
+   "check": "R-04 records quarantined",
+   "value": 638,
+   "expectation": 638,
+   "passed": true
+  },
+  {
+   "check": "SM layer 1 in-scope contract records",
+   "value": 1413138,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "SM layer 2 records matching the exclusion list",
+   "value": 8071,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "SM layer 2 records excluded, docket level",
+   "value": 8092,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "  of which over-excluded by docket reuse",
+   "value": 21,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "fact_matter records",
+   "value": 1405046,
+   "expectation": 1405046,
+   "passed": true
+  },
+  {
+   "check": "distinct matters",
+   "value": 1403097,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "  records beyond one per matter (reopenings)",
+   "value": 1949,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "R-01.b record_key is unique",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "R-01.b one latest record per matter",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "R-03 matters with negative duration",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "R-03 closed matters with no end date",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "R-03 open matters carrying an end date",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "SM-1 party columns in fact_matter",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "SM-2 rows outside the scope code list",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "SM-3 excluded dockets surviving into fact",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "every NOS resolves in the dimension",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "open matters (inventory)",
+   "value": 32679,
+   "expectation": null,
+   "passed": null
+  }
+ ],
+ "finished_utc": "2026-08-26T23:02:51+00:00",
+ "passed": true
+}

@@ -69,7 +69,25 @@ defend for no analytical gain.
 Any case whose `PLT` or `DEF` matches the exclusion list in
 `data/reference/excluded_parties.csv` is dropped from `fact_matter` before any
 measure is computed. Matching is case-insensitive on a normalised form
-(punctuation and corporate suffixes stripped).
+(punctuation and corporate suffixes stripped), **on word boundaries**, and
+**at docket level**. Both of those qualifications were added after the first
+build, and each fixed a real defect found by running it:
+
+- **Word boundaries, not substrings.** A raw substring match put the token
+  `t mobile` inside `BIG RIVER DISCOUN|T MOBILE` and `spectrum` inside
+  `SPECTRUM INVESTMENT`, excluding cases with no connection to any carrier.
+  755 of the original 8,826 matches were false positives of this kind.
+- **Docket level, not row level.** The same docket carries the carrier's name
+  spelled differently across its records — `CONTI CABLEVISION N E`,
+  `CONTI CABELISION ON N E` (the source's own typo) and
+  `CONTINENTAL CABLE, ET AL` are three records of one case. A row-level filter
+  dropped one and kept another; 14 cases survived that way. Excluding the whole
+  docket closes it.
+
+**Measured on the 2026-08-26 build:** 1,413,138 records in scope, **8,071
+matched the exclusion list**, **8,092 excluded at docket level** — the 21-record
+difference is over-exclusion caused by docket-number reuse, which is the safe
+direction and is counted rather than hidden.
 
 The list covers T-Mobile and its predecessors and affiliates — including
 Sprint, Nextel, MetroPCS, VoiceStream, Omnipoint and Powertel — and the other
@@ -90,9 +108,13 @@ already know:
 1. **`PLT` and `DEF` are first-listed parties only.** A carrier appearing as
    the third defendant is invisible to the match. This is a property of the
    source, not of the implementation, and it cannot be engineered around.
-2. **The fields are free text with no normalisation.** Abbreviations,
-   misspellings, `d/b/a` forms and subsidiary names that share no token with
-   the parent all evade a list match.
+2. **The fields are free text with no normalisation, and the source contains
+   misspellings.** This is not a hypothetical: `CONTI CABELISION ON N E` is a
+   real value in the frozen file, on a docket whose other records read
+   `CONTI CABLEVISION N E`. Abbreviations, `d/b/a` forms and subsidiary names
+   sharing no token with the parent evade the list in the same way.
+   Docket-level exclusion recovers the cases where *some* record spells the
+   name recognisably; it recovers nothing where *no* record does.
 3. **Insurers and servicers are frequently the named party** in commercial
    disputes where the operating company is the real interest.
 4. **The list is a point-in-time artifact.** Corporate names change; the list
