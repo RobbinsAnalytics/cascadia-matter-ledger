@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS noise
+Thumbs.db
+.DS_Store
+
+# Secrets. The CourtListener API token is read from the environment, never
+# committed. See governance/source-register.md.
+.env
+
+# ---------------------------------------------------------------------------
+# THE DATA FREEZE, AND WHY PART OF IT IS NOT COMMITTED
+#
+# Every prior Cascadia module commits data/raw/ outright, because an EDGAR
+# response is a few hundred kilobytes. This module's snapshot is a 314 MB zip
+# that expands to 2.0 GB of tab-delimited text, and git is the wrong container
+# for it.
+#
+# The freeze is therefore asserted by HASH, not by tracking the bytes:
+# data/raw/cv88on.zip.sha256 and governance/source-register.md are committed
+# and are the authoritative record of what was pulled and when.
+# src/validate_freeze.py re-computes the hash and fails if it moved.
+#
+# Everything DERIVED from the snapshot -- data/reference/ and data/conformed/
+# -- is committed, and is small.
+# ---------------------------------------------------------------------------
+data/raw/cv88on.zip
+data/raw/*.txt
+data/raw/*.part

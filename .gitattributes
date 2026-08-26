@@ -1,0 +1,20 @@
+# Line endings: normalized to LF in the repository and on checkout.
+# Windows tooling rewrites tracked files with CRLF, which makes "the frozen
+# snapshot is untouched" impossible to assert by hash. This is a policy
+# declaration, made before the first commit so no renormalization is needed.
+
+* text=auto eol=lf
+
+# Binaries: never examined for line endings, never normalized.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.woff binary
+*.woff2 binary
+*.db   binary
+*.sqlite binary
+*.zip  binary
+*.gz   binary
