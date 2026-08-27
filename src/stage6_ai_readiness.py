@@ -179,9 +179,41 @@ def main():
     """ % (CONTRACT, DUR)).fetchone()[0]
 
     write_report(steps, careful, naive_trend, gov_trend, negatives)
+
+    # Machine-readable sidecar for the visual layer. This SERIALISES values the
+    # script already computed and prints; it changes no measure and no figure.
+    # The markdown report's hash is unchanged by this addition, which is how
+    # that claim is checked rather than asserted.
+    import json as _json
+    sidecar = {
+        "generated_from": "src/stage6_ai_readiness.py",
+        # No as-of here on purpose: governance/health.json carries the
+        # authoritative freeze date and the page reads it from there. Two
+        # copies of an as-of date is the drift problem one level up.
+        "question": ("How long does it take to resolve a contract dispute in "
+                     "federal court?"),
+        "ungoverned_days": steps[0]["answer"],
+        "governed_days": steps[-1]["answer"],
+        "negative_duration_records": negatives,
+        "steps": steps,
+        "careful_analyst": {"days": careful[1], "records": careful[0],
+                            "first_statistical_year": careful[2]},
+        "trend": {
+            "ungoverned_mean_days": [
+                {"statistical_year": int(r.sy), "days": float(r.d)}
+                for r in naive_trend.itertuples()],
+            "governed_median_days": [
+                {"statistical_year": int(r.sy), "days": float(r.d)}
+                for r in gov_trend.itertuples()],
+        },
+    }
+    (REPO / "data" / "conformed" / "stage6_proof.json").write_text(
+        _json.dumps(sidecar, indent=1), encoding="utf-8")
+
     con.close()
     gcon.close()
     print("\nwrote %s" % OUT.relative_to(REPO))
+    print("wrote data/conformed/stage6_proof.json")
 
 
 def write_report(steps, careful, naive_trend, gov_trend, negatives):

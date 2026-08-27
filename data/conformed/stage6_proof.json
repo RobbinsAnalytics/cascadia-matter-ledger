@@ -1,0 +1,284 @@
+{
+ "generated_from": "src/stage6_ai_readiness.py",
+ "question": "How long does it take to resolve a contract dispute in federal court?",
+ "ungoverned_days": -742.2699980964471,
+ "governed_days": 208.0,
+ "negative_duration_records": 32767,
+ "steps": [
+  {
+   "n": 0,
+   "label": "the obvious query, reader defaults",
+   "rows": 1413149,
+   "answer": -742.2699980964471,
+   "cause": "nothing corrected yet",
+   "artifact": "-"
+  },
+  {
+   "n": 1,
+   "label": "+ correct the encoding",
+   "rows": 1413149,
+   "answer": -742.2699980964471,
+   "cause": "the file is not UTF-8 (measured: zero rows recovered)",
+   "artifact": "CLAUDE.md source property 1"
+  },
+  {
+   "n": 2,
+   "label": "+ disable quoting",
+   "rows": 1413149,
+   "answer": -742.2783306065376,
+   "cause": "no quoting convention; party names contain bare quotes",
+   "artifact": "CLAUDE.md source property 2"
+  },
+  {
+   "n": 3,
+   "label": "+ quarantine field-shifted records",
+   "rows": 1413138,
+   "answer": -742.2783306065376,
+   "cause": "638 records carry a tab inside the defendant name",
+   "artifact": "docket-to-matter.md R-04"
+  },
+  {
+   "n": 4,
+   "label": "+ exclude pending matters",
+   "rows": 1380371,
+   "answer": 319.75933174390326,
+   "cause": "pending records carry TERMDATE = 01/01/1900, not null",
+   "artifact": "source-register.md F-02"
+  },
+  {
+   "n": 5,
+   "label": "+ one record per matter (reopenings)",
+   "rows": 1378578,
+   "answer": 319.6277465821641,
+   "cause": "a reopened matter produces a second status record",
+   "artifact": "docket-to-matter.md R-01.b"
+  },
+  {
+   "n": 6,
+   "label": "+ the subject-matter control",
+   "rows": 1370419,
+   "answer": 319.5206247140473,
+   "cause": "carrier parties excluded at docket level",
+   "artifact": "subject-matter-filter.md"
+  },
+  {
+   "n": 7,
+   "label": "+ median, not mean",
+   "rows": 1370419,
+   "answer": 208.0,
+   "cause": "litigation durations are heavily right-skewed",
+   "artifact": "metric_register.md M-01"
+  }
+ ],
+ "careful_analyst": {
+  "days": 332.3147380222159,
+  "records": 776020,
+  "first_statistical_year": 2001
+ },
+ "trend": {
+  "ungoverned_mean_days": [
+   {
+    "statistical_year": 2001,
+    "days": 285.05480068581227
+   },
+   {
+    "statistical_year": 2002,
+    "days": 327.4770252184638
+   },
+   {
+    "statistical_year": 2003,
+    "days": 340.4376615274931
+   },
+   {
+    "statistical_year": 2004,
+    "days": 356.13870906321404
+   },
+   {
+    "statistical_year": 2005,
+    "days": 331.4542393843617
+   },
+   {
+    "statistical_year": 2006,
+    "days": 330.68631467420096
+   },
+   {
+    "statistical_year": 2007,
+    "days": 317.1489706443004
+   },
+   {
+    "statistical_year": 2008,
+    "days": 304.6033017653286
+   },
+   {
+    "statistical_year": 2009,
+    "days": 311.44895624821277
+   },
+   {
+    "statistical_year": 2010,
+    "days": 313.095327612868
+   },
+   {
+    "statistical_year": 2011,
+    "days": 310.5601632188271
+   },
+   {
+    "statistical_year": 2012,
+    "days": 317.8636289132929
+   },
+   {
+    "statistical_year": 2013,
+    "days": 330.8568994284497
+   },
+   {
+    "statistical_year": 2014,
+    "days": 321.0103937566513
+   },
+   {
+    "statistical_year": 2015,
+    "days": 337.3210615831621
+   },
+   {
+    "statistical_year": 2016,
+    "days": 338.4144925292251
+   },
+   {
+    "statistical_year": 2017,
+    "days": 330.1809895833333
+   },
+   {
+    "statistical_year": 2018,
+    "days": 338.580395421436
+   },
+   {
+    "statistical_year": 2019,
+    "days": 336.0819390648085
+   },
+   {
+    "statistical_year": 2020,
+    "days": 355.06708262130905
+   },
+   {
+    "statistical_year": 2021,
+    "days": 353.6596023856859
+   },
+   {
+    "statistical_year": 2022,
+    "days": 371.51479447876153
+   },
+   {
+    "statistical_year": 2023,
+    "days": 356.99363409908665
+   },
+   {
+    "statistical_year": 2024,
+    "days": 359.13171802083014
+   },
+   {
+    "statistical_year": 2025,
+    "days": 362.04975842168835
+   }
+  ],
+  "governed_median_days": [
+   {
+    "statistical_year": 2001,
+    "days": 174.0
+   },
+   {
+    "statistical_year": 2002,
+    "days": 223.0
+   },
+   {
+    "statistical_year": 2003,
+    "days": 242.0
+   },
+   {
+    "statistical_year": 2004,
+    "days": 250.0
+   },
+   {
+    "statistical_year": 2005,
+    "days": 227.0
+   },
+   {
+    "statistical_year": 2006,
+    "days": 219.0
+   },
+   {
+    "statistical_year": 2007,
+    "days": 217.0
+   },
+   {
+    "statistical_year": 2008,
+    "days": 218.0
+   },
+   {
+    "statistical_year": 2009,
+    "days": 208.0
+   },
+   {
+    "statistical_year": 2010,
+    "days": 223.0
+   },
+   {
+    "statistical_year": 2011,
+    "days": 214.0
+   },
+   {
+    "statistical_year": 2012,
+    "days": 221.0
+   },
+   {
+    "statistical_year": 2013,
+    "days": 229.0
+   },
+   {
+    "statistical_year": 2014,
+    "days": 217.0
+   },
+   {
+    "statistical_year": 2015,
+    "days": 243.0
+   },
+   {
+    "statistical_year": 2016,
+    "days": 231.0
+   },
+   {
+    "statistical_year": 2017,
+    "days": 224.0
+   },
+   {
+    "statistical_year": 2018,
+    "days": 222.0
+   },
+   {
+    "statistical_year": 2019,
+    "days": 238.0
+   },
+   {
+    "statistical_year": 2020,
+    "days": 243.0
+   },
+   {
+    "statistical_year": 2021,
+    "days": 249.0
+   },
+   {
+    "statistical_year": 2022,
+    "days": 267.0
+   },
+   {
+    "statistical_year": 2023,
+    "days": 257.0
+   },
+   {
+    "statistical_year": 2024,
+    "days": 268.0
+   },
+   {
+    "statistical_year": 2025,
+    "days": 263.0
+   }
+  ]
+ }
+}
