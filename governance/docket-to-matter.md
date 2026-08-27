@@ -64,6 +64,28 @@ activity uses all records and says that instead.
 This was not designed in. The first build asserted one row per matter, failed
 on 1,947 keys, and the assertion was right and the rule was wrong.
 
+**R-01.b.i — the tie-break, and why it is written down.** *Added 2026-08-26
+after the independent validation caught the rule being underspecified.*
+
+"Latest" was originally defined as the record with the highest statistical year,
+then the latest termination date. **318 matters tie on both.** The first
+implementation broke those ties on row order, which a parallel query engine does
+not guarantee — so the same rule produced a different answer in the build than
+in the validator, and two published cells disagreed by one record.
+
+The tie-break is therefore part of the rule rather than an artifact of
+execution. After statistical year and termination date, order by
+`disposition_code`, then `procedural_progress_code`, then `origin_code`,
+ascending, nulls last. Where every modelled column also ties the records are
+indistinguishable within this model and either choice yields identical measures.
+
+**The wider point.** A rule that is deterministic in prose and non-deterministic
+in execution is not a rule. Nothing about the original wording looked
+underspecified, and it passed its first validation run by luck. It was found
+because the module re-derives every published figure down a second,
+independently written path, and the two paths disagreed by one record out of
+1,370,419.
+
 **R-01.c — the clock.** A matter's open date is the court's filing date and its
 close date is the court's termination date. **This is the court's clock, not the
 department's** — see L-05.

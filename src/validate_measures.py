@@ -86,7 +86,7 @@ def build_independent_view(con):
                             WHERE x.CIRCUIT=s.CIRCUIT AND x.DISTRICT=s.DISTRICT
                               AND x.OFFICE=s.OFFICE AND x.DOCKET=s.DOCKET)
         ), typed AS (
-          SELECT CIRCUIT, DISTRICT, OFFICE, DOCKET, NOS, DISP, PROCPROG,
+          SELECT CIRCUIT, DISTRICT, OFFICE, DOCKET, NOS, DISP, PROCPROG, ORIGIN,
                  CIRCUIT||'-'||DISTRICT||'-'||OFFICE||'-'||DOCKET||'-'||FILEDATE
                    AS matter_key,
                  CAST(TAPEYEAR AS INTEGER) AS sy,
@@ -104,7 +104,11 @@ def build_independent_view(con):
         )
         SELECT *, ROW_NUMBER() OVER (
                    PARTITION BY matter_key
-                   ORDER BY sy DESC, termd DESC NULLS LAST, rk DESC) = 1
+                   ORDER BY sy DESC, termd DESC NULLS LAST,
+                            COALESCE(NULLIF(DISP,'-8'), '~') ASC,
+                            COALESCE(NULLIF(PROCPROG,'-8'), '~') ASC,
+                            COALESCE(NULLIF(ORIGIN,'-8'), '~') ASC,
+                            rk ASC) = 1
                  AS latest,
                CASE WHEN closed AND termd IS NOT NULL
                     THEN date_diff('day', filed, termd) END AS days

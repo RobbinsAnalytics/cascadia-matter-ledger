@@ -1,13 +1,13 @@
 procedural_progress_code,procedural_progress,issue_joined_group,closed_matters,pct,median_days
-10,"other, after issued joined",after issued joined,254519,18.57,274.0
-1,"no court action, before issue joined",before issue joined,245285,17.9,108.0
-2,"order entered, before issue joined",before issue joined,244643,17.85,120.0
-4,"judgement on motion, after issued joined",after issued joined,188837,13.78,279.0
-5,"pretrial conference held, after issued joined",after issued joined,171328,12.5,388.0
-3,"no court action, after issued joined",after issued joined,134072,9.78,274.0
+10,"other, after issued joined",after issued joined,254521,18.57,274.0
+1,"no court action, before issue joined",before issue joined,245289,17.9,108.0
+2,"order entered, before issue joined",before issue joined,244641,17.85,120.0
+4,"judgement on motion, after issued joined",after issued joined,188833,13.78,279.0
+5,"pretrial conference held, after issued joined",after issued joined,171326,12.5,388.0
+3,"no court action, after issued joined",after issued joined,134076,9.78,274.0
 12,"order decided, before issue joined",before issue joined,92363,6.74,118.0
 8,"after court trial, after issued joined",after issued joined,13130,0.96,654.0
-9,"after jury trial, after issued joined",after issued joined,12665,0.92,641.0
+9,"after jury trial, after issued joined",after issued joined,12663,0.92,641.0
 11,"hearing held, before issue joined",before issue joined,6872,0.5,154.0
 7,"during jury trial, after issued joined",after issued joined,3051,0.22,581.0
 6,"during court trial, after issued joined",after issued joined,2302,0.17,495.0

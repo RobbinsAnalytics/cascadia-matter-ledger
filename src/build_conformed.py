@@ -285,13 +285,21 @@ def main():
     # are true; they describe different points in the matter's life. Measures
     # that answer "how did this matter end" use the latest record, and say so.
     con.execute("ALTER TABLE fact_matter ADD COLUMN is_latest_record BOOLEAN")
+    # R-01.b.i. The tie-break is part of the rule, not an artifact of
+    # execution. 318 matters tie on statistical year AND termination date;
+    # ordering those by record_key means ordering by ROW_NUMBER() OVER (),
+    # which a parallel engine does not guarantee. That made the build and the
+    # independent validator disagree by one record.
     con.execute("""
         UPDATE fact_matter f SET is_latest_record = (f.record_key = (
           SELECT g.record_key FROM fact_matter g
           WHERE g.matter_key = f.matter_key
           ORDER BY g.statistical_year DESC,
                    g.terminated_date DESC NULLS LAST,
-                   g.record_key DESC
+                   COALESCE(g.disposition_code, '~') ASC,
+                   COALESCE(g.procedural_progress_code, '~') ASC,
+                   COALESCE(g.origin_code, '~') ASC,
+                   g.record_key ASC
           LIMIT 1))
     """)
 

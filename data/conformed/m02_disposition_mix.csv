@@ -1,18 +1,18 @@
 disposition_code,disposition,closed_matters,pct
-13,settled,421267,30.74
-12,voluntarily,224457,16.38
+13,settled,421277,30.74
+12,voluntarily,224458,16.38
 4,default,169367,12.36
-14,other,142390,10.39
-6,motion before trial,107634,7.85
-1,remanded to state court,52636,3.84
-3,lack of jurisdiction,46775,3.41
+14,other,142391,10.39
+6,motion before trial,107632,7.85
+1,remanded to state court,52637,3.84
+3,lack of jurisdiction,46772,3.41
 5,consent,46743,3.41
-18,statistical closing,32855,2.4
-0,transfer to another district,31659,2.31
-17,other,30701,2.24
-2,want of prosecution,27125,1.98
+18,statistical closing,32851,2.4
+0,transfer to another district,31660,2.31
+17,other,30699,2.24
+2,want of prosecution,27123,1.98
 7,jury verdict,12200,0.89
-9,court trial,11420,0.83
+9,court trial,11419,0.83
 10,multi district litigation transfer,4585,0.33
 16,stayed pending bankruptcy,3153,0.23
 15,award of arbitrator,2171,0.16
