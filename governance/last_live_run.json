@@ -1,0 +1,40 @@
+{
+ "started_utc": "2026-08-27T04:28:45+00:00",
+ "slice": {
+  "court": "cand",
+  "nature_of_suit_prefix": "190",
+  "date_filed_gte": "2024-01-01"
+ },
+ "checks": [
+  {
+   "check": "quota remaining - day",
+   "value": 75,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "quota remaining - hour",
+   "value": 0,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "quota remaining - minute",
+   "value": 5,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "request budget for this run",
+   "value": 0,
+   "expectation": null,
+   "passed": null
+  }
+ ],
+ "status": "skipped: no quota headroom in the binding window",
+ "notes": [
+  "day=75 hour=0 minute=5; the hour window binds"
+ ],
+ "finished_utc": "2026-08-27T04:28:45+00:00",
+ "passed": true
+}

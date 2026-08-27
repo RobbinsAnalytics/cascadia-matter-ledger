@@ -1,0 +1,44 @@
+{
+ "generated_utc": "2026-08-27T04:30:24+00:00",
+ "module": "cascadia-matter-ledger",
+ "frozen_baseline": {
+  "as_of": "2026-08-26",
+  "slice_matters": 954,
+  "slice_open_matters": 384
+ },
+ "live_edge": {
+  "roster_dockets": 80,
+  "roster_complete": false,
+  "dockets_fully_ingested": 34,
+  "dockets_partial": 1,
+  "entries_derived": 657,
+  "event_counts": {
+   "UNCLASSIFIED": 552,
+   "ORDER": 40,
+   "NOTICE": 22,
+   "MOTION": 15,
+   "SUMMONS": 7,
+   "STIPULATION": 6,
+   "COMPLAINT": 6,
+   "ANSWER": 4,
+   "RESPONSE": 4,
+   "TRANSCRIPT": 1
+  },
+  "watermark": 0,
+  "runs_total": 6
+ },
+ "last_run": {
+  "started_utc": "2026-08-27T04:28:45+00:00",
+  "finished_utc": "2026-08-27T04:28:45+00:00",
+  "status": "skipped: no quota headroom in the binding window",
+  "passed": true,
+  "checks_total": 4,
+  "checks_failed": [],
+  "error": null
+ },
+ "reconciliation": {
+  "roster_vs_frozen_variance": -874,
+  "balances": false,
+  "reason_not_balanced": "expected; see governance/reconciliation.md"
+ }
+}
