@@ -73,13 +73,23 @@ number nobody can re-derive.
 
 ## 3 · Renders handed to the panel
 
-| Width | Why | Files |
-|---|---|---|
-| **1040 px** | design width | `docs/renders/{page,c1..c5}-1040.png` |
-| **320 px** | Rule 5.3 / WCAG 1.4.10 reflow floor, and the width `CASCADIA.minCanvasPx` hard-codes | `docs/renders/{page,c1..c5}-320.png` |
+**Twelve files: five charts at two widths, plus a full-page render at each.**
+
+| Viewport | Chart element | Why | Files |
+|---|---|---|---|
+| **1040 px** | **1000 CSS px** | design width | `docs/renders/{c1..c5,page}-1040.png` |
+| **320 px** | **280 CSS px** | Rule 5.3 / WCAG 1.4.10 reflow floor | `docs/renders/{c1..c5,page}-320.png` |
+
+**The filename is the viewport width, not the chart's width, and the panel is
+given both numbers.** The page's own margins take the element narrower than the
+viewport, so the 320 px set exercises the charts at **280 CSS px — below the
+320 px floor `CASCADIA.minCanvasPx` declares.** That is a harder test than the
+standard asks for and the charts are read at it, but it is stated rather than
+left for a seat to infer from a filename.
 
 CHART-REVIEW v2.5 makes "design width only" a FAIL condition on check 7.4, so
-both sets exist and both are handed over. Rendered at `deviceScaleFactor: 2`.
+both sets exist and both are handed over. Rendered at `deviceScaleFactor: 2`,
+so image pixels are twice the CSS values above.
 
 ## 4 · The Rule 7.4 reading panel — NOT YET RUN
 
