@@ -1,0 +1,163 @@
+{
+ "specimen": "2026-08-28-v1",
+ "what_this_is": "The five charts of the Cascadia Matter Ledger visual layer as they stood BEFORE any reading-panel feedback was applied. Frozen so a later generic-vs-tuned panel comparison has a stable un-panelled baseline to read. These charts have never been panelled.",
+ "frozen_on": "2026-08-28",
+ "rendered_on": "2026-08-26",
+ "source_commit": "2876c0a",
+ "source_path": "docs/renders/",
+ "tag": "panel-specimen-v1",
+ "identical_to_source_commit": true,
+ "widths_note": "The filename carries the VIEWPORT width, not the chart's. Page margins take the element narrower: -1040 renders the chart at 1000 CSS px and -320 at 280 CSS px, which is below the 320 px floor CASCADIA.minCanvasPx declares. Image pixels are twice the CSS width because deviceScaleFactor is 2. The two page-*.png files are full-page captures and have no single chart-element width.",
+ "standard": {
+  "VIZ-PRINCIPLES.md": "v2.7",
+  "CHART-REVIEW.md": "v2.7",
+  "checklist": "A (explanatory); no reader controls"
+ },
+ "file_count": 12,
+ "files": [
+  {
+   "file": "c1-1040.png",
+   "sha256": "0cfad485b7014bbe0fefd8699f83575e9b7f5ea8dea8344937bf0e925a351481",
+   "bytes": 182469,
+   "image_px": {
+    "width": 2000,
+    "height": 1330
+   },
+   "viewport_css_px": 1040,
+   "chart_element_css_px": 1000,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "c1-320.png",
+   "sha256": "2715cf6771ec9f3bf25579e68092b6ee80d36ece9dec419e2b65efa46bb832ca",
+   "bytes": 221500,
+   "image_px": {
+    "width": 560,
+    "height": 2288
+   },
+   "viewport_css_px": 320,
+   "chart_element_css_px": 280,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "c2-1040.png",
+   "sha256": "0b363463b9eb9b106f8c51719485cb971c7913cc74bd740d37786c8216282149",
+   "bytes": 188658,
+   "image_px": {
+    "width": 2000,
+    "height": 1276
+   },
+   "viewport_css_px": 1040,
+   "chart_element_css_px": 1000,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "c2-320.png",
+   "sha256": "dd9531aebd2a139e20d6d3e0f5c23c880b27cbf5a13e9791f468fda5e26dc325",
+   "bytes": 197401,
+   "image_px": {
+    "width": 560,
+    "height": 2018
+   },
+   "viewport_css_px": 320,
+   "chart_element_css_px": 280,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "c3-1040.png",
+   "sha256": "1352098087e78f0ca4dda57d0cdcd7009ec0133a250a839e3453741ca98ddd12",
+   "bytes": 197828,
+   "image_px": {
+    "width": 2000,
+    "height": 1216
+   },
+   "viewport_css_px": 1040,
+   "chart_element_css_px": 1000,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "c3-320.png",
+   "sha256": "7a406d3655aa4fa1ad6ca4d4d2eff827f25ff3db48883b6848fe83d149829ac7",
+   "bytes": 185376,
+   "image_px": {
+    "width": 560,
+    "height": 2058
+   },
+   "viewport_css_px": 320,
+   "chart_element_css_px": 280,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "c4-1040.png",
+   "sha256": "3faf5a8702fc99825c6242a10f9a7b112dff502258fac54415271faf8077d7a1",
+   "bytes": 202080,
+   "image_px": {
+    "width": 2000,
+    "height": 1238
+   },
+   "viewport_css_px": 1040,
+   "chart_element_css_px": 1000,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "c4-320.png",
+   "sha256": "41b12bd47e95bd7b55bcf16c8b56465e6e1fd17f1bdc37d81a62565bc51c96db",
+   "bytes": 219846,
+   "image_px": {
+    "width": 560,
+    "height": 2188
+   },
+   "viewport_css_px": 320,
+   "chart_element_css_px": 280,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "c5-1040.png",
+   "sha256": "c80ff5bae226a8aad7850c04a1c3815fa5d363c9bb26cdd9bb08ca6bc8d1c9d6",
+   "bytes": 201922,
+   "image_px": {
+    "width": 2000,
+    "height": 1256
+   },
+   "viewport_css_px": 1040,
+   "chart_element_css_px": 1000,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "c5-320.png",
+   "sha256": "a6cae3011348fdefc7bcbe344d62ecb788cb499ab55e64a15365086a99b69660",
+   "bytes": 204876,
+   "image_px": {
+    "width": 560,
+    "height": 2316
+   },
+   "viewport_css_px": 320,
+   "chart_element_css_px": 280,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "page-1040.png",
+   "sha256": "d1986ff42c3e441677be84ef2f75e53ed13e9cfe0ea538dc76d0c8a9b3e8f51c",
+   "bytes": 1848676,
+   "image_px": {
+    "width": 2080,
+    "height": 12364
+   },
+   "viewport_css_px": 1040,
+   "chart_element_css_px": null,
+   "device_scale_factor": 2
+  },
+  {
+   "file": "page-320.png",
+   "sha256": "1457a9477373c49ac9ead9840dec4270bf28d373df754edb3b5df26ebcc230f7",
+   "bytes": 1998616,
+   "image_px": {
+    "width": 640,
+    "height": 21138
+   },
+   "viewport_css_px": 320,
+   "chart_element_css_px": null,
+   "device_scale_factor": 2
+  }
+ ]
+}
