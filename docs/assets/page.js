@@ -90,9 +90,42 @@
     return {
       w: w,
       narrow: narrow,
-      labelWidth: narrow ? Math.max(96, Math.round(w * 0.44)) : 230,
-      gridRight: narrow ? 46 : 96,
+      // Proportional at every width, not only below 560. A fixed 230 px
+      // label column plus a 92 px right gutter squeezed the plot at ~630 px
+      // until outside-the-bar labels landed back on top of the bars. That
+      // width sat between the two rendered widths and so was never checked.
+      labelWidth: Math.max(96, Math.min(230, Math.round(w * 0.30))),
+      gridRight: narrow ? 46 : 92,
+      // Rule 5.5 drop order step 1: the tooltip is the FIRST thing to go as
+      // the chart narrows, and CHART-REVIEW fails a hover-following tooltip
+      // at <=768 px outright. The data tables carry the values either way.
+      tooltip: w > 768,
       abbrev: function (s) { return narrow && ABBREV[s] ? ABBREV[s] : s; }
+    };
+  }
+
+  /**
+   * Tooltip config, or `{show:false}` below 769 px.
+   *
+   * A tooltip does NOT move this artifact to Checklist B. That list is for
+   * "any artifact whose finding belongs to the reader"; every finding here is
+   * fixed in a title and a tooltip moves none of them. Rule 5.5 governs
+   * tooltips inside Checklist A, and Rule 4.4 names the tooltip as the home
+   * for full precision. The provenance strip therefore stays at THREE
+   * segments -- 4.4's fourth segment is required only where a control changes
+   * what is shown, and this changes nothing.
+   *
+   * Styling comes from the theme's own tooltip block. Nothing is invented.
+   */
+  function tip(L, opts) {
+    if (!L.tooltip) return { show: false };
+    return {
+      show: true,
+      trigger: opts.trigger || 'item',
+      confine: true,
+      appendToBody: false,
+      axisPointer: opts.trigger === 'axis' ? { type: 'line' } : undefined,
+      formatter: opts.formatter
     };
   }
 
@@ -104,11 +137,15 @@
     // plot and is clipped. Give it the room rather than shortening the label.
     var top = titleTop(L.w, opts.finding, opts.subtitle) +
               (opts.showN && L.narrow ? 24 : 0);
+    // Two-line category labels need taller rows or the second line of one
+    // label crowds the bar below it.
+    var twoLine = rows.some(function (r) { return r.label.indexOf('\n') >= 0; });
     host.style.height =
-      (opts.baseHeight + (L.narrow ? rows.length * 16 : 0) + Math.max(0, top - 106)) + 'px';
+      (opts.baseHeight + (L.narrow ? rows.length * 16 : 0) +
+       (twoLine ? rows.length * 14 : 0) + Math.max(0, top - 106)) + 'px';
     var ch = echarts.init(host, 'cascadia');
     ch.setOption({
-      title: cascadiaTitle(opts.finding, opts.subtitle, { container: host }),
+      title: cascadiaTitle(opts.finding, opts.subtitle, { width: L.w - 14 }),
       grid: { left: 8, right: L.gridRight, bottom: 8, top: top,
               containLabel: true },
       // Rule 5.5 drop order, step 3: as the chart narrows, thin the tick
@@ -128,14 +165,29 @@
                  var base = L.abbrev(r.label);
                  return opts.showN ? base + '\n(n=' + nf(r.n) + ')' : base;
                }),
+               // interval:0 forces EVERY category label to render. ECharts
+               // drops labels it thinks would collide, and with two-line
+               // labels it silently dropped the first and last categories --
+               // two bars with no name against them, which reads as a chart
+               // that lost its data rather than one that lost its labels.
                axisLabel: { width: L.labelWidth, overflow: 'break',
-                            lineHeight: 15 } },
+                            lineHeight: 15, verticalAlign: 'middle',
+                            interval: 0, margin: 10 } },
+      tooltip: tip(L, {
+        trigger: 'item',
+        formatter: function (p) {
+          var r = rows[p.dataIndex];
+          return (opts.tooltip ? opts.tooltip(r) : r.label + ': ' + nf(r.value));
+        }
+      }),
       series: [{
         type: 'bar', data: rows.map(function (r) { return r.value; }),
         itemStyle: { color: C.evergreen },
         label: { show: true, position: 'right', fontFamily: SANS, fontSize: 12,
                  color: INK.evergreen,
-                 formatter: function (p) { return opts.valueLabel(p.value); } }
+                 formatter: function (p) {
+                   return opts.valueLabel(rows[p.dataIndex]);
+                 } }
       }]
     });
     cascadiaResize(host, ch);
@@ -171,14 +223,35 @@
     cats.push('The governed answer');
     spans.push({ from: 0, to: d.end, delta: d.end, anchor: true });
 
-    // Round bounds, with room at both ends for the outside-the-bar labels.
-    var lo = Math.floor((Math.min(0, d.start) - 120) / 100) * 100;
-    var hi = Math.ceil((Math.max(0, d.end) + 190) / 100) * 100;
+    // Round bounds, with room at both ends MEASURED from the widest value
+    // label rather than guessed. A fixed pad was right at 1040 px and wrong
+    // at ~630 px, where the narrower plot meant the same label needed more
+    // data-units of room and the labels landed back on top of their bars.
+    _m.font = '12px ' + SANS;
+    var widestLabel = 0;
+    spans.forEach(function (sp) {
+      var t = sp.anchor ? String(sp.to) : (sp.delta > 0 ? '+' : '') + sp.delta;
+      widestLabel = Math.max(widestLabel, _m.measureText(t).width);
+    });
+    var plotPx = Math.max(120,
+      L.w - 8 - L.labelWidth - (L.narrow ? 40 : 92) - 30);
+    // The axis must cover EVERY span endpoint, not just the first and last
+    // answers. The running total peaks at 319.8 after step 4 and then falls
+    // back to 208, so bounds taken from start and end alone cut the axis at
+    // 300: three bars ran past the frame and ECharts dropped their labels
+    // because the points sat outside the range. K1 catches a series leaving
+    // the frame, and this is how one does it quietly.
+    var pts = [0];
+    spans.forEach(function (sp) { pts.push(sp.from, sp.to); });
+    var dmin = Math.min.apply(null, pts), dmax = Math.max.apply(null, pts);
+    var pad = (widestLabel + 16) * ((dmax - dmin) / plotPx);
+    var lo = Math.floor((dmin - pad) / 100) * 100;
+    var hi = Math.ceil((dmax + pad) / 100) * 100;
     var domIdx = 0;
     spans.forEach(function (s, i) { if (s.delta === d.dominant.delta) domIdx = i; });
 
     ch.setOption({
-      title: cascadiaTitle(c1Finding, c1Sub, { container: host }),
+      title: cascadiaTitle(c1Finding, c1Sub, { width: L.w - 14 }),
       grid: { left: 8, right: L.narrow ? 40 : 92, bottom: 8, top: c1Top,
               containLabel: true },
       xAxis: { type: 'value', name: 'days', nameLocation: 'middle',
@@ -187,6 +260,18 @@
       yAxis: { type: 'category', data: cats, inverse: true,
                axisLabel: { width: L.labelWidth, overflow: 'break',
                             lineHeight: 15 } },
+      tooltip: tip(L, {
+        trigger: 'axis',
+        formatter: function (ps) {
+          var i = ps && ps.length ? ps[0].dataIndex : 0;
+          var sp = spans[i];
+          if (!sp) return '';
+          return cats[i] + '<br>' +
+            (sp.anchor ? 'answer: ' + sp.to + ' days'
+                       : (sp.delta > 0 ? '+' : '') + sp.delta +
+                         ' days → ' + sp.to + ' days');
+        }
+      }),
       series: [{
         type: 'custom',
         renderItem: function (params, api) {
@@ -228,27 +313,34 @@
             }
           };
         })
-      }, {
+      }].concat(L.w < 900 ? [] : [{
         // Rule 3.4 — the finding is annotated on the mark that carries it.
-        // Anchored above the dominant bar, over the empty left half of the
-        // rows whose steps are sub-day, so no mark is overdrawn (K3).
+        // Anchored in the band beside the sub-day steps, whose only marks sit
+        // hard against the left edge, so no mark is overdrawn (K3).
+        //
+        // Below 900 px there is no such free space: the prose leaves the plot
+        // and appears beneath it instead (Rule 5.5 drop order, step 4). It is
+        // one or the other, never both — an earlier version rendered the
+        // in-plot annotation at every width AND the note below it, which
+        // printed the same sentence twice and overlapped a bar at 320 px.
         type: 'scatter', symbolSize: 0, data: [],
         markPoint: cascadiaAnnotation(
           'Pending matters carry a termination date of 01/01/1900 —\na well-formed date that is not a termination.',
-          { coord: [Math.round(lo * 0.33), domIdx], color: C.evergreen,
-            position: 'top', distance: 8, width: L.narrow ? 240 : 330,
+          { coord: [Math.round(lo * 0.30), Math.max(0, domIdx - 1)],
+            color: C.evergreen, position: 'top', distance: 26, width: 330,
             container: host })
-      }]
+      }])
     });
     cascadiaResize(host, ch);
     cascadiaProvenance(host, { source: SOURCE, asOf: ASOF,
       flags: 'every step re-derived from the frozen file; no step omitted or rescaled' });
     var c1note = el('c1-note');
     if (c1note) {
-      c1note.textContent = L.narrow
+      var c1Out = L.w < 900;
+      c1note.textContent = c1Out
         ? 'Step 4 is the one that moves the answer: pending matters carry a termination date of 01/01/1900 — a well-formed date that is not a termination.'
         : '';
-      c1note.style.display = L.narrow ? 'block' : 'none';
+      c1note.style.display = c1Out ? 'block' : 'none';
     }
 
     el('sum-c1').textContent =
@@ -293,9 +385,22 @@
       'The broken records are invisible here: pending cases carry statistical year 2099, which falls off the end of this axis.';
 
     ch.setOption({
-      title: cascadiaTitle(c2Finding, c2Sub, { container: host }),
+      title: cascadiaTitle(c2Finding, c2Sub, { width: L.w - 14 }),
       grid: { left: 8, right: L.narrow ? 12 : 150, bottom: 8, top: c2Top,
               containLabel: true },
+      // One hover reports BOTH series for the year under the pointer, which
+      // is the comparison the chart is making. Gone below 769 px per 5.5.
+      tooltip: tip(L, {
+        trigger: 'axis',
+        formatter: function (ps) {
+          if (!ps || !ps.length) return '';
+          var out = 'Statistical year ' + ps[0].axisValue;
+          ps.forEach(function (q) {
+            out += '<br>' + q.seriesName + ': ' + q.data + ' days';
+          });
+          return out;
+        }
+      }),
       xAxis: { type: 'category', data: d.years, boundaryGap: false,
                axisLabel: { interval: L.narrow ? 7 : 4 } },
       yAxis: { type: 'value', name: 'days', nameLocation: 'end', nameGap: 12,
@@ -375,15 +480,31 @@
     var pct = Math.round(1000 * before / tot) / 10;
     var top = d[0];
     barChart('c3', {
+      // Every label is exactly two lines: the act, then its issue-joined
+      // group in parentheses. The qualified single-line form wrapped at
+      // different points per category -- "issue" fell to a second line on
+      // some rows and not others -- which made a ranked list hard to scan.
+      // The group is a DECLARED abbreviation of the codebook's own wording
+      // (which reads "after ISSUED joined" -- a typo in the source, not here).
       rows: d.slice().sort(function (a, b) { return a.n - b.n; })
-             .map(function (r) { return { label: r.label, n: r.n, value: r.n }; }),
+             .map(function (r) {
+               var g = r.group.indexOf('before') === 0 ? 'before issue' : 'after issue';
+               return { label: r.description + '\n(' + g + ')',
+                        n: r.n, value: r.n, pct: r.pct, median: r.median };
+             }),
       baseHeight: 440, units: 'matters',
       finding: pct + '% of contract matters end before the issue is even joined',
       subtitle: 'Closed contract matters by the point the case had reached when it was disposed of. Codes are qualified by their issue-joined group, which the codebook carries in a heading rather than in the code itself.',
-      valueLabel: function (v) { return nf(v); },
+      valueLabel: function (r) { return nf(r.value); },
+      tooltip: function (r) {
+        return r.label.replace('\n', ' ') + '<br>' + nf(r.n) + ' matters · ' +
+               r.pct + '%' + (r.median ? ' · median ' + r.median + ' days' : '');
+      },
       flags: 'certified measure M-03; codes qualified by issue-joined group',
       summary: 'Sorted bar chart. The shape is a long tail: the largest category, ' +
-        top.label + ', holds ' + nf(top.n) + ' matters (' + top.pct +
+        top.description + ' (' +
+        (top.group.indexOf('before') === 0 ? 'before issue' : 'after issue') +
+        '), holds ' + nf(top.n) + ' matters (' + top.pct +
         '%), and the smallest hold a few thousand each. The four categories that sit before ' +
         'the issue was joined account for ' + nf(before) + ' matters, ' + pct +
         '% of all closed contract matters.',
@@ -395,13 +516,20 @@
   (function () {
     var d = D.c4, minN = Math.min.apply(null, d.map(function (r) { return r.n; }));
     barChart('c4', {
-      rows: d.map(function (r) { return { label: r.label, n: r.n, value: r.median }; }),
+      rows: d.map(function (r) {
+              return { label: r.label, n: r.n, value: r.median,
+                       p25: r.p25, p75: r.p75 };
+            }),
       inverse: true, showN: true, baseHeight: 430, units: 'days',
       finding: 'Median time to resolve runs from ' + d[0].median + ' to ' +
                d[d.length - 1].median + ' days depending on the kind of contract dispute',
       subtitle: 'Median days from filing to termination, closed contract matters, by nature of suit. Category size is stated on every bar because a median over ' +
         nf(minN) + ' matters and one over ' + nf(d[d.length - 1].n) + ' are not the same claim.',
-      valueLabel: function (v) { return v + ' d'; },
+      valueLabel: function (r) { return r.value + ' d'; },
+      tooltip: function (r) {
+        return r.label + '<br>median ' + r.value + ' days · 25th ' + r.p25 +
+               ' · 75th ' + r.p75 + '<br>' + nf(r.n) + ' closed matters';
+      },
       flags: 'certified measure M-01; median, exact over the full closed population',
       summary: 'Sorted bar chart, fastest at the top. The spread is roughly threefold: ' +
         d[0].label + ' resolves in a median ' + d[0].median + ' days over ' + nf(d[0].n) +
@@ -430,13 +558,24 @@
              .map(function (r) {
                return { label: dupes[r.label] > 1
                           ? r.label + ' (code ' + r.code + ')' : r.label,
-                        n: r.n, value: r.n };
+                        n: r.n, value: r.pct };
              }),
-      baseHeight: 480, units: 'matters',
+      baseHeight: 480, units: '% of closed matters',
       finding: settled.pct + '% of contract matters settle; ' + jury.pct +
                '% reach a jury verdict',
       subtitle: 'Closed contract matters by the manner in which the court disposed of the case. The disposition is the court’s characterisation of the ending, not the department’s.',
-      valueLabel: function (v) { return nf(v); },
+      // The title makes a percentage claim, so the bars carry percentages and
+      // the counts move to the tooltip -- Rule 4.4 names the tooltip as the
+      // home for full precision. The share is already a column in the
+      // certified measure; nothing new is derived here.
+      // One decimal throughout, and never a bare "0%" for a category that
+      // is not empty: 178 matters is 0.013%, and printing that as 0% states
+      // something the data does not say.
+      valueLabel: function (r) {
+        return r.value < 0.05 ? '<0.1%' : r.value.toFixed(1) + '%';
+      },
+      tooltip: function (r) { return r.label + '<br>' + nf(r.n) +
+                                     ' matters · ' + r.value + '%'; },
       flags: 'certified measure M-02; transfers and remands are continuations, not outcomes',
       summary: 'Sorted bar chart. The shape is dominated by two bars: settlement at ' +
         nf(settled.n) + ' matters (' + settled.pct + '%) and voluntary dismissal below it, ' +

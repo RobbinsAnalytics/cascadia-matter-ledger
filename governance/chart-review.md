@@ -1,6 +1,7 @@
 # Chart review — Cascadia Matter Ledger
 
-*Visual layer, five detailed charts. Owner: Aaron Robbins. Reviewed 2026-08-26.*
+*Visual layer, five detailed charts. Owner: Aaron Robbins.*
+*First review 2026-08-26; second round after Aaron's read of the renders, 2026-08-28.*
 
 **Binding standard, confirmed on disk and quoted by version:**
 
@@ -63,7 +64,47 @@ the configuration.
 | F-8 | C3–C5 | At 320 px the x-axis ticks collided into an unreadable run of digits, and the axis units were lost behind them. | **Fixed** — `splitNumber` thinned, declared `k` abbreviation, units never dropped. |
 | F-9 | C4 | The topmost category's three-line label was clipped above the plot. | **Fixed** — headroom added rather than the label shortened. |
 | F-10 | C5 | **Two dispositions render identically as "other"** — code 14 is a dismissal, code 17 a judgment — because `dim_disp` does not carry the codebook's three-group structure. Same defect class as the procedural-progress codes. | **Disambiguated on the chart by code**, which is in the certified measure, and **reported**. Carrying the group properly is a data-layer change and is recorded as owed, not made from the visual layer. |
-| F-11 | health | `governance/health.json` records only the **most recent** run. The brief's §4 asks for the last *successful* run and the last *failure* with its cause; neither is derivable from a single-run record. | **Reported, not worked around.** The surface renders what the record actually holds and does not invent run history. |
+| F-11 | health | `governance/health.json` records only the **most recent** run. The brief's §4 asks for the last *successful* run and the last *failure* with its cause; neither is derivable from a single-run record. | **Reported, then closed on 2026-08-28.** An append-only `governance/run_history.jsonl` now records every run, and the surface shows the last successful run and the last run that was not "ok". The log begins where it was added: earlier runs were overwritten in place and are **not** reconstructed, because the module's one genuine HTTP 429 failure cannot be recovered without fabricating it. The failure story is told instead by the incident table, whose four entries are all checkable commits. |
+
+### Second round — Aaron's read of the renders, 2026-08-28
+
+He reviewed the 1040 px renders and raised four chart notes and one on the
+health surface. Acting on them exposed five further defects, four of which
+only a render shows.
+
+| # | Chart | Finding | Disposition |
+|---|---|---|---|
+| F-12 | C1 | **Value labels collided with their own bars at ~630 px** — the width Aaron happened to screenshot. A fixed 230 px label column plus a 92 px gutter squeezed the plot until "outside the bar" landed back on it. 630 px sat between the two rendered widths and was therefore never checked. | **Fixed** — label column proportional at every width, and axis padding **measured** from the widest label rather than a constant. 630 px and 768 px added to the verification set. |
+| F-13 | C1 | **K1 — three bars ran past the frame.** Axis bounds were taken from the first and last answers, but the running total peaks at 319.8 after step 4 before falling back to 208. The axis stopped at 300, and ECharts silently dropped the labels of every point outside it. | **Fixed** — bounds computed from every span endpoint. |
+| F-14 | C1 | **K3 — the annotation overlapped step 3's mark and step 4's bar.** | **Fixed** — moved into the band beside the sub-day steps, whose only marks sit hard against the left edge. Below 900 px it leaves the plot entirely (5.5 step 4). |
+| F-15 | C1 | At narrow widths the chart rendered **both** the in-plot annotation and the out-of-plot note — the same sentence twice, one of them over a bar. | **Fixed** — it is one or the other, never both. |
+| F-16 | C3 | Two-line category labels made ECharts **auto-hide the first and last categories**: two bars with no name against them, which reads as a chart that lost its data. | **Fixed** — `interval: 0` forces every label; rows given more height. |
+| F-17 | C5 | The four smallest dispositions rendered as **"0%" although none is empty** — 178 matters is 0.013%. | **Fixed** — `<0.1%` below the rounding floor, one decimal elsewhere. |
+| F-18 | all | Titles clipped hard against the right frame at 630 px. | **Fixed** — title block width is container minus 14 px. |
+
+**What changed by request rather than by defect:** Chart 5's bars now carry
+percentages, matching its title's claim, with counts moved to the tooltip
+(Rule 4.4 names the tooltip as the home for full precision, and the share was
+already a column in the certified measure). Chart 3's labels are uniformly two
+lines — act, then issue-joined group in parentheses — read from the dimension's
+separate `description` and `group` columns. All 21 dispositions were kept: two
+are already named "other" (codes 14 and 17), so a third synthetic "other" for
+the tail would mislead rather than tidy.
+
+### The tooltip decision, recorded so it is not re-derived
+
+All five charts gained a tooltip. **This does not move the artifact to
+Checklist B.** That list governs "interactive pages, filtered views, and any
+artifact whose finding belongs to the reader" — every finding here is fixed in
+a title and a tooltip moves none of them. Rule 5.5 governs tooltips *inside*
+Checklist A, and Rule 4.4 names the tooltip as the home for full precision.
+
+Two conditions, both met: the tooltip is **absent below 769 px**, because
+CHART-REVIEW 5.5 fails a hover-following tooltip at ≤768 px and the drop order
+makes it the first thing to go; and the provenance strip **stays at three
+segments**, because Rule 4.4's fourth segment is required only where a control
+changes what is shown, and this changes nothing. Styling is the theme's own
+`tooltip` block — nothing invented.
 
 Two figures were **typed** in a first draft of the page — the empty-description
 share and the substring-match inflation. Both were replaced with values
@@ -90,6 +131,15 @@ left for a seat to infer from a filename.
 CHART-REVIEW v2.5 makes "design width only" a FAIL condition on check 7.4, so
 both sets exist and both are handed over. Rendered at `deviceScaleFactor: 2`,
 so image pixels are twice the CSS values above.
+
+**Two further widths — 630 px and 768 px — are rendered for verification and
+are not part of the panel set.** 630 px is where F-12 and F-18 were found: a
+width that fell between the two deliverable renders and so was never looked at.
+`src/render_charts.py <width> --out <dir>` produces them on demand.
+
+**The un-panelled baseline is frozen** at `governance/panel-specimen/2026-08-28-v1/`
+and tagged `panel-specimen-v1`, so the charts as they stood before this round
+still exist for a generic-vs-tuned panel comparison.
 
 ## 4 · The Rule 7.4 reading panel — NOT YET RUN
 

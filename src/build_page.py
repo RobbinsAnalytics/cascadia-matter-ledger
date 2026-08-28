@@ -21,6 +21,7 @@ import pathlib
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 CONF = REPO / "data" / "conformed"
+REF = REPO / "data" / "reference"
 GOV = REPO / "governance"
 DOCS = REPO / "docs"
 
@@ -28,8 +29,8 @@ SOURCE = "FJC Integrated Database, federal civil dockets"
 LIVE_SOURCE = "CourtListener RECAP, N.D. Cal. contract dockets"
 
 
-def read_csv(name):
-    with (CONF / name).open(encoding="utf-8") as fh:
+def read_csv(name, base=None):
+    with ((base or CONF) / name).open(encoding="utf-8") as fh:
         return list(csv.DictReader(fh))
 
 
@@ -83,6 +84,11 @@ def main():
     m01 = read_csv("m01_time_to_termination_by_nos.csv")
     m02 = read_csv("m02_disposition_mix.csv")
     m03 = read_csv("m03_procedural_progress.csv")
+    # The measure carries the QUALIFIED description ("no court action, before
+    # issue joined"). The dimension carries description and group as separate
+    # columns, which is what the two-line label needs. Join on code rather
+    # than string-splitting the qualified form.
+    dim_pp = {r["code"]: r for r in read_csv("dim_procprog.csv", REF)}
 
     as_of = health["frozen_baseline"]["as_of"]
 
@@ -144,6 +150,7 @@ def main():
                "governed": [round(p["days"], 1) for p in tr_g]},
         "c3": [{"code": r["procedural_progress_code"],
                 "label": r["procedural_progress"],
+                "description": dim_pp[r["procedural_progress_code"]]["description"],
                 "group": r["issue_joined_group"],
                 "n": int(r["closed_matters"]),
                 "pct": round(100.0 * int(r["closed_matters"]) / total_closed, 1),
@@ -220,6 +227,9 @@ def table(tid, caption, headers, rows):
 
 def render(data, f, health):
     lr = health["last_run"]
+    rh = health.get("run_history", {})
+    ok_run = rh.get("last_successful_run") or {}
+    notok = rh.get("last_not_ok_run") or {}
     le = health["live_edge"]
     fb = health["frozen_baseline"]
     rec = health["reconciliation"]
@@ -263,9 +273,19 @@ def render(data, f, health):
         "variance": "%+d" % rec["roster_vs_frozen_variance"],
         "runs": le["runs_total"],
         "status": html.escape(lr["status"]),
+        "state_class": ("ok" if lr.get("status") == "ok"
+                        else ("failed" if lr.get("status") == "failed"
+                              else "stopped")),
         "checks_total": lr["checks_total"],
         "checks_failed": len(lr["checks_failed"]),
         "run_started": lr["started_utc"].replace("T", " ").replace("+00:00", " UTC"),
+        "runs_recorded": rh.get("runs_recorded", 0),
+        "last_ok_at": (ok_run.get("started_utc", "") or "—")
+                      .replace("T", " ").replace("+00:00", " UTC"),
+        "last_ok_rows": fmt(ok_run.get("rows_persisted", 0)),
+        "last_ok_dockets": fmt(ok_run.get("dockets_completed", 0)),
+        "last_notok": (notok.get("status") or
+                       "none recorded since the log began"),
         "generated": health["generated_utc"].replace("T", " ").replace("+00:00", " UTC"),
         "order": ev.get("ORDER", 0),
     }
@@ -331,6 +351,18 @@ TEMPLATE = r"""<!DOCTYPE html>
   .state { display:inline-block; padding:1px 8px; border-radius:2px;
            font:12px/1.6 "Segoe UI",Arial,sans-serif; }
   .state.stopped { background:#F6EDE7; color:#BA572D; }
+  .state.ok      { background:#E8F1EC; color:#1E7A4C; }
+  .state.failed  { background:#F6EDE7; color:#BA572D; font-weight:600; }
+  table.incidents { border-collapse:collapse; margin:12px 2px 4px; width:100%;
+                    font:13px/1.55 "Segoe UI",Arial,sans-serif; }
+  table.incidents caption { text-align:left; font-weight:600; padding:4px 0;
+                            color:#232B27; }
+  table.incidents th, table.incidents td { border:1px solid #E4E7E3;
+                            padding:7px 10px; text-align:left;
+                            vertical-align:top; }
+  table.incidents thead th { background:#F3F5F2; }
+  table.incidents th[scope="row"] { font-weight:400; color:#232B27; }
+  table.incidents code { font:12px "Cascadia Mono",Consolas,monospace; }
   h2 { font:600 24px/1.3 "Source Serif 4",Georgia,serif; margin:34px 0 6px; }
   h3 { font:600 17px/1.35 "Source Serif 4",Georgia,serif; margin:22px 0 4px; }
   .lede { font:17px/1.65 "Source Serif 4",Georgia,serif; max-width:70ch; }
@@ -475,10 +507,13 @@ the pipeline writes — not restated by hand.</p>
 <div class="health">
   <h3 style="margin-top:0">Live edge — last run</h3>
   <dl>
-    <dt>Run state</dt><dd><span class="state stopped">@@status@@</span></dd>
+    <dt>Run state</dt><dd><span class="state @@state_class@@">@@status@@</span></dd>
     <dt>Started</dt><dd>@@run_started@@</dd>
     <dt>Assertions checked / failed</dt><dd>@@checks_total@@ / @@checks_failed@@</dd>
-    <dt>Runs to date</dt><dd>@@runs@@</dd>
+    <dt>Last successful run</dt><dd>@@last_ok_at@@</dd>
+    <dt>&nbsp;&nbsp;rows added on that run</dt><dd>@@last_ok_rows@@ from @@last_ok_dockets@@ dockets</dd>
+    <dt>Last run that was not "ok"</dt><dd>@@last_notok@@</dd>
+    <dt>Runs to date / recorded in the log</dt><dd>@@runs@@ / @@runs_recorded@@</dd>
     <dt>Dockets on roster</dt><dd>@@roster@@</dd>
     <dt>Dockets fully ingested / partial</dt><dd>@@complete@@ / @@partial@@</dd>
     <dt>Docket entries derived</dt><dd>@@entries@@</dd>
@@ -487,11 +522,32 @@ the pipeline writes — not restated by hand.</p>
   </dl>
 </div>
 
+<h3>What has gone wrong, how it was caught, and what changed</h3>
+<p class="chart-summary">A surface that has only ever shown green has demonstrated
+nothing. This pipeline has caught four defects <em>in itself</em>, every one of them a
+silent failure — nothing errored, and each would have under-collected or mis-stated while
+reporting success. Each row below is checkable in the repository's history.</p>
+
+<table class="incidents">
+<caption>Defects the module found in its own pipeline</caption>
+<thead><tr><th scope="col">What was wrong</th><th scope="col">How it surfaced</th><th scope="col">Fixed in</th></tr></thead>
+<tbody>
+<tr><th scope="row">The watermark advanced past dockets whose rows were never written — 36 dockets marked done, zero rows persisted</th>
+    <td>The run's own record showed the watermark had moved while the output file did not exist</td><td><code>5ef5234</code></td></tr>
+<tr><th scope="row">A docket was called complete on the strength of its first page; 29 of the first 36 had more than one</th>
+    <td>Row counts did not reconcile against the roster</td><td><code>5ef5234</code></td></tr>
+<tr><th scope="row">The request budget read the daily rate-limit window while the hourly window was already exhausted</th>
+    <td>The run spent itself on 90-second backoffs for requests that could not succeed</td><td><code>5ef5234</code></td></tr>
+<tr><th scope="row">A tie-break in the matter-grain rule depended on row order, which a parallel query engine does not guarantee</th>
+    <td><strong>The independent re-derivation disagreed with the build by one record in 1,370,419</strong></td><td><code>317d827</code></td></tr>
+</tbody>
+</table>
+
 <div class="governance-note">
-<strong>The run above did not succeed, and it is shown rather than hidden.</strong> It
-stopped because the source's rate limit had no headroom left in the binding window — which
-is the pipeline working as designed, not a fault, and the record says which of the three
-windows bound it. A surface that has only ever shown green has demonstrated nothing.
+<strong>A rate-limit stop is a stop, not a failure, and the record says which it was.</strong>
+When the source's binding window has no headroom the run exits in seconds and names the
+window that bound it. That is the pipeline working as designed. The run log keeps stops,
+skips and genuine failures apart rather than colouring them all red.
 <br><br>
 <strong>Coverage is not completeness.</strong> @@empty_pct@@% of ingested docket entries
 carry no description text at all — the source holds what someone has purchased from PACER.
@@ -514,6 +570,10 @@ CourtListener's RECAP archive. <strong>No client data and no proprietary data of
 kind.</strong> Nothing here is legal advice, and nothing here is an assessment of any
 identified party's litigation exposure: the model is aggregate by construction and
 carries no party column.</p>
+<p>Source, governance documents and build scripts:
+<a href="https://github.com/RobbinsAnalytics/cascadia-matter-ledger">github.com/RobbinsAnalytics/cascadia-matter-ledger</a>.
+Every figure on this page is computed at build time from a certified measure; the
+independent re-derivation that gates publication is <code>src/validate_measures.py</code>.</p>
 <p class="asof">Frozen as of @@as_of@@ · health surface generated @@generated@@</p>
 </div>
 

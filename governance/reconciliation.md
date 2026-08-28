@@ -13,12 +13,12 @@ not a lookup, and it is stated here rather than buried in a join.
 |---|---:|
 | Frozen baseline — matters in slice | **954** |
 | Frozen baseline — of those, still open | 384 |
-| Live edge — dockets on roster | **80** |
-| Live edge — dockets fully ingested | 34 |
+| Live edge — dockets on roster | **240** |
+| Live edge — dockets fully ingested | 52 |
 | Live edge — dockets partially ingested | 1 |
-| Live edge — docket entries derived | 657 |
+| Live edge — docket entries derived | 2,014 |
 
-**Variance, roster against frozen baseline: -874.**
+**Variance, roster against frozen baseline: -714.**
 
 ## It does not balance, and it is not supposed to yet
 
@@ -48,18 +48,20 @@ that formats the field differently.
 
 | Event type | Entries |
 |---|---:|
-| `UNCLASSIFIED` | 552 |
-| `ORDER` | 40 |
-| `NOTICE` | 22 |
-| `MOTION` | 15 |
-| `SUMMONS` | 7 |
-| `STIPULATION` | 6 |
-| `COMPLAINT` | 6 |
-| `ANSWER` | 4 |
-| `RESPONSE` | 4 |
-| `TRANSCRIPT` | 1 |
+| `UNCLASSIFIED` | 1,569 |
+| `ORDER` | 104 |
+| `MOTION` | 81 |
+| `NOTICE` | 75 |
+| `SUMMONS` | 45 |
+| `COMPLAINT` | 40 |
+| `RESPONSE` | 33 |
+| `STIPULATION` | 32 |
+| `ANSWER` | 14 |
+| `DECLARATION` | 14 |
+| `TRANSCRIPT` | 6 |
+| `JUDGMENT` | 1 |
 
-**`UNCLASSIFIED` is 84.0% and that is a health metric, not a bug.**
+**`UNCLASSIFIED` is 77.9% and that is a health metric, not a bug.**
 Most of it is entries with no description text at all — RECAP holds
 the docket line without the document. They are retained and counted
 rather than dropped, because an entry with no text is still evidence
@@ -70,9 +72,9 @@ every denominator. See `docket-event-derivation.md` D-04 and D-05.
 
 | | |
 |---|---|
-| Started | 2026-08-27T04:28:45+00:00 |
-| Status | **skipped: no quota headroom in the binding window** |
-| Assertions | 4, 0 failed |
+| Started | 2026-08-28T18:26:59+00:00 |
+| Status | **ok** |
+| Assertions | 19, 0 failed |
 
 A run that stops early because the rate limit bound it is recorded as
 stopped, not as failed, and it says which window bound it. A run that

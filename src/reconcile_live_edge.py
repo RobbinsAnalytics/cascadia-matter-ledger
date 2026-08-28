@@ -60,6 +60,36 @@ def main():
     state = json.loads((LIVE / "watermark.json").read_text(encoding="utf-8"))
     run = json.loads((GOV / "last_live_run.json").read_text(encoding="utf-8"))
 
+    # Make sure the run record on disk is in the history before reading it
+    # back. The history was added after several runs had already happened, so
+    # without this the current run would be missing from it until the next
+    # scheduled pull. Idempotent on started_utc; it back-dates nothing and
+    # invents nothing -- it ingests a record that already exists on disk.
+    sys.path.insert(0, str(REPO / "src"))
+    from pull_live_edge import append_history
+    append_history(run)
+
+    history = []
+    hpath = GOV / "run_history.jsonl"
+    if hpath.exists():
+        for line in hpath.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                history.append(json.loads(line))
+    history.sort(key=lambda r: r.get("started_utc") or "")
+
+    def latest(pred):
+        for r in reversed(history):
+            if pred(r):
+                return r
+        return None
+
+    last_ok = latest(lambda r: r.get("status") == "ok")
+    # Anything that is not a clean "ok": a rate-limit stop, a skip, or a real
+    # failure. They are NOT the same thing and the record keeps them apart.
+    last_not_ok = latest(lambda r: r.get("status") != "ok")
+    last_failure = latest(lambda r: r.get("status") == "failed"
+                          or r.get("checks_failed"))
+
     rows, dockets_with_rows, events = [], set(), {}
     out = LIVE / "fact_docket_event.jsonl"
     if out.exists():
@@ -105,6 +135,16 @@ def main():
             "checks_failed": [c["check"] for c in run.get("checks", [])
                               if c.get("passed") is False],
             "error": run.get("error"),
+        },
+        "run_history": {
+            "runs_recorded": len(history),
+            "history_started": history[0]["started_utc"] if history else None,
+            "last_successful_run": last_ok,
+            "last_not_ok_run": last_not_ok,
+            "last_failed_run": last_failure,
+            "_note": ("The history begins when the log was added, not when the "
+                      "module did. Earlier runs were overwritten in place and "
+                      "are not recoverable; they are not reconstructed here."),
         },
         "reconciliation": {
             "roster_vs_frozen_variance": variance,

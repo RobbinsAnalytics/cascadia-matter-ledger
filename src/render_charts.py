@@ -23,15 +23,26 @@ CHARTS = ["c1", "c2", "c3", "c4", "c5"]
 
 
 def main():
+    # Optional: `render_charts.py 630 768 --out <dir>` renders extra widths
+    # somewhere else. The two DELIVERABLE widths stay 1040 and 320; the extras
+    # exist because a defect was found at ~630 px, a width that sat between
+    # them and was therefore never checked.
+    argv = sys.argv[1:]
+    out_dir = OUT
+    if "--out" in argv:
+        i = argv.index("--out")
+        out_dir = pathlib.Path(argv[i + 1])
+        argv = argv[:i] + argv[i + 2:]
+    widths = [int(a) for a in argv if a.isdigit()] or [DESIGN_WIDTH, NARROW_WIDTH]
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
         sys.exit("playwright is required: pip install playwright && playwright install chromium")
-    OUT.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        for width in (DESIGN_WIDTH, NARROW_WIDTH):
+        for width in widths:
             page = browser.new_page(viewport={"width": width, "height": 1400},
                                     device_scale_factor=2)
             errors = []
@@ -46,13 +57,13 @@ def main():
                 for e in errors[:8]:
                     print("    " + e)
 
-            page.screenshot(path=str(OUT / ("page-%d.png" % width)),
+            page.screenshot(path=str(out_dir / ("page-%d.png" % width)),
                             full_page=True)
             for cid in CHARTS:
                 card = page.locator("#%s" % cid).locator(
                     "xpath=ancestor::div[contains(@class,'chart-card')]")
                 target = card if card.count() else page.locator("#%s" % cid)
-                target.screenshot(path=str(OUT / ("%s-%d.png" % (cid, width))))
+                target.screenshot(path=str(out_dir / ("%s-%d.png" % (cid, width))))
                 print("  %s-%d.png" % (cid, width))
 
             # Report the rendered provenance segment count -- CHART-REVIEW K5

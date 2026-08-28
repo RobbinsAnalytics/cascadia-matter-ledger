@@ -415,6 +415,50 @@ def main():
         return 1
 
 
+def append_history(run):
+    """Append one line per run to governance/run_history.jsonl.
+
+    WHY THIS EXISTS. `last_live_run.json` holds only the most recent run, so
+    "when did this last succeed" and "when did it last not" were both
+    unanswerable -- the previous run's record is overwritten before anyone
+    reads it. That is how the module's one genuine HTTP 429 failure became
+    unrecoverable: it was overwritten before it was ever committed, and it
+    cannot now be shown without fabricating it, which is not on the table.
+
+    Append-only, one JSON object per line, idempotent on started_utc so a
+    re-run or a reconcile pass cannot double-count a run.
+    """
+    path = GOV / "run_history.jsonl"
+    entry = {
+        "started_utc": run.get("started_utc"),
+        "finished_utc": run.get("finished_utc"),
+        "status": run.get("status"),
+        "passed": run.get("passed"),
+        "checks_total": len(run.get("checks", [])),
+        "checks_failed": [c["check"] for c in run.get("checks", [])
+                          if c.get("passed") is False],
+        "error": run.get("error"),
+    }
+    for c in run.get("checks", []):
+        if c["check"] == "dockets COMPLETED this run":
+            entry["dockets_completed"] = c["value"]
+        elif c["check"] == "rows persisted this run":
+            entry["rows_persisted"] = c["value"]
+        elif c["check"] == "entries derived this run":
+            entry["entries_derived"] = c["value"]
+
+    seen = set()
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                seen.add(json.loads(line).get("started_utc"))
+    if entry["started_utc"] in seen:
+        return False
+    with path.open("a", encoding="utf-8", newline="\n") as fh:
+        fh.write(json.dumps(entry) + "\n")
+    return True
+
+
 def finish(run, state, dockets, entries, event_counts):
     run["finished_utc"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     run["passed"] = all(c["passed"] for c in run["checks"]
@@ -423,6 +467,7 @@ def finish(run, state, dockets, entries, event_counts):
     STATE.write_text(json.dumps(state, indent=1), encoding="utf-8")
     (GOV / "last_live_run.json").write_text(json.dumps(run, indent=1),
                                             encoding="utf-8")
+    append_history(run)
     # Rows are NOT written here. They are persisted inside the walk, before
     # the watermark advances past the docket they came from. See W-02.
     print("\nRUN %s (%s)" % ("PASSED" if run["passed"] else "FAILED",
