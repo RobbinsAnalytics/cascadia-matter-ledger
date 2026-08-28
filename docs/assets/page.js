@@ -139,7 +139,11 @@
               (opts.showN && L.narrow ? 24 : 0);
     // Two-line category labels need taller rows or the second line of one
     // label crowds the bar below it.
-    var twoLine = rows.some(function (r) { return r.label.indexOf('\n') >= 0; });
+    // showN appends the "(n=...)" line further down, in the yAxis mapping,
+    // so testing r.label alone reported single-line for Chart 4 and its
+    // category labels collided into each other.
+    var twoLine = !!opts.showN ||
+                  rows.some(function (r) { return r.label.indexOf('\n') >= 0; });
     host.style.height =
       (opts.baseHeight + (L.narrow ? rows.length * 16 : 0) +
        (twoLine ? rows.length * 14 : 0) + Math.max(0, top - 106)) + 'px';
@@ -217,8 +221,9 @@
     var running = d.start;
     d.deltas.forEach(function (s) {
       cats.push(s.n + '. ' + L.abbrev(s.label));
-      spans.push({ from: running, to: running + s.delta, delta: s.delta });
-      running += s.delta;
+      var to = Math.round((running + s.delta) * 10) / 10;
+      spans.push({ from: running, to: to, delta: s.delta });
+      running = to;
     });
     cats.push('The governed answer');
     spans.push({ from: 0, to: d.end, delta: d.end, anchor: true });
