@@ -1,5 +1,5 @@
 match_token,affiliation,note
-t-mobile,T-Mobile US,The subject company. Primary exclusion.
+t-mobile,T-Mobile US,Carrier.
 tmobile,T-Mobile US,Unhyphenated form.
 t mobile,T-Mobile US,Space-separated form.
 voicestream,T-Mobile US,T-Mobile USA predecessor; acquired by Deutsche Telekom 2001.
@@ -7,7 +7,7 @@ omnipoint,T-Mobile US,VoiceStream predecessor.
 powertel,T-Mobile US,VoiceStream predecessor.
 metropcs,T-Mobile US,Merged with T-Mobile USA 2013.
 metro pcs,T-Mobile US,Spaced form.
-sprint,T-Mobile US,Merged into T-Mobile 2020. Sam Nicholson's prior employer.
+sprint,T-Mobile US,Merged lineage 2020.
 nextel,T-Mobile US,Sprint Nextel; merged lineage.
 boost mobile,T-Mobile US / DISH,Divested to DISH 2020; excluded on both lineages.
 virgin mobile,T-Mobile US,Sprint prepaid brand.

@@ -7,13 +7,21 @@
 
 ## The control objective
 
-> **Nothing this module produces may read as an assessment of the litigation
-> exposure of T-Mobile, of any predecessor or affiliate of T-Mobile, or of any
-> other telecommunications carrier.**
+> **No telecommunications carrier may be the subject of analysis in this
+> module, and nothing it produces may read as an assessment of any identified
+> party's litigation exposure — carrier or otherwise.**
 
 This is a hard constraint on the artifact, not a stylistic preference. The
 measures in this module are domain-agnostic, so satisfying it costs no
 analytical content.
+
+The rule is stated at sector level and enforced at sector level. It is not a
+rule about one company, and writing it as one would have made the control
+weaker as well as narrower: an exclusion aimed at a single name misses that
+name's predecessors, its operating entities, and every competitor whose
+inclusion would raise the same objection. The list in
+`data/reference/excluded_parties.csv` covers the sector for exactly that
+reason.
 
 ## Why it became a control rather than a precaution
 
@@ -89,11 +97,12 @@ matched the exclusion list**, **8,092 excluded at docket level** — the 21-reco
 difference is over-exclusion caused by docket-number reuse, which is the safe
 direction and is counted rather than hidden.
 
-The list covers T-Mobile and its predecessors and affiliates — including
-Sprint, Nextel, MetroPCS, VoiceStream, Omnipoint and Powertel — and the other
-major US carriers and their operating entities, including the ones that
-litigate under names that do not contain the brand, such as Cellco Partnership
-(Verizon Wireless) and New Cingular Wireless (AT&T Mobility).
+The list covers the major US carriers, their predecessors and their operating
+entities — **including the ones that litigate under names containing no
+recognisable brand at all**, such as Cellco Partnership (Verizon Wireless) and
+New Cingular Wireless (AT&T Mobility). Those are the entries that matter: a
+list assembled from brand names alone would have missed them, and they are why
+the list is maintained by corporate lineage rather than by trademark.
 
 **Every run publishes how many rows this layer dropped.** A filter whose catch
 count is never reported is a filter nobody has checked.

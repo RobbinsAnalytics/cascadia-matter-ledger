@@ -12,8 +12,9 @@ same directory.
 
 ## The hard constraint, before anything else
 
-**T-Mobile must not be the subject of analysis here, and nothing produced may
-read as an assessment of any carrier's litigation exposure.** The source names
+**No telecommunications carrier may be the subject of analysis here, and
+nothing produced may read as an assessment of any identified party's
+litigation exposure.** The source names
 parties — `PLT` and `DEF` are populated on every row — so this is an
 implemented filter, not an intention. The rule, its three layers and its
 measured limits are in `governance/subject-matter-filter.md`. Do not add a
