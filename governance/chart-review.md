@@ -334,6 +334,74 @@ computed at build time from committed artifacts (`fact_docket_event.jsonl` and
 the response cache). K2 does not distinguish between a wrong number and a right
 number nobody can re-derive.
 
+---
+
+### Third round — Aaron's read on a phone and a narrow desktop, 2026-08-29
+
+Two reports, both reproduced before anything was changed. The second one
+turned out to be three defects wearing one coat.
+
+**F-19 · Chart 1 value labels drawn over their own bars.** Reported at ~465 px.
+Reproduced exactly. Cause: leftward bars used `position: 'top'`, and an
+ECharts label position anchors to the **data point**, which sits at the row's
+vertical centre — not to the top of the rect. With `distance: 7` and a bar
+half-height near 26 px, "7 px above the point" is 19 px *inside* the bar. The
+rightward labels were never affected, which is why `+1062` and the three `0`s
+always looked right and every negative value did not. **Fixed:** the position
+is now `right`/`left` at every width — always outside the far end.
+
+**F-20 · The axis padding was solved once, and reserving room is a fixed-point
+problem.** Fixing F-19 moved the collision rather than ending it: at 320 px
+`-742.3` then overlapped the *category* label. Padding the axis widens its
+range, which shrinks pixels-per-unit, which shrinks the gap the padding just
+bought. Solving `p·plotPx ≥ K·(R + 2p)` for `p` closes the loop.
+**Fixed**, and it exposed F-21 underneath.
+
+**F-21 · `plotPx` was estimated, and the estimate was 42% wrong.** Measured
+against the real ECharts grid rect at four widths:
+
+| viewport | host | real grid | old estimate |
+|---|---:|---:|---:|
+| 320 | 254 | **103** | 146 |
+| 390 | 324 | **173** | 195 |
+| 465 | 399 | **229** | 247 |
+| 1040 | 974 | **667** | 680 |
+
+Because the padding is proportional to `1/plotPx`, an over-estimated plot
+**under-reserves** room. This was the original cause of F-19's whole class,
+and no amount of position tuning would have reached it. **Fixed:** the
+estimate now matches the measured rect.
+
+**The 320 px case is geometrically impossible, and is handled by dropping the
+label rather than by pretending.** A label needs ~57 px at each end of a
+**103 px** plot. `2K > plotPx`, so no padding value exists. The usual
+waterfall answer — put the label inside the bar — is **not available here**:
+paper on madrona measures **4.31:1** and 12 px text needs 4.5:1 (paper on
+evergreen passes at 5.18:1, but a rule that works for one hue and not the
+other is not a rule). So below the fit threshold the value labels are dropped
+per Rule 5.5's drop order, the bars keep true scale, and the note under the
+chart says where the numbers went. Labels are present at 390 px and above.
+
+**F-22 · The tooltip gate read the width instead of the pointer.** Reported as
+"no hover popups on mobile"; the same gate also removed them from a *narrow
+desktop window*, which has a mouse. CHART-REVIEW 5.5 fails a **hover-following**
+tooltip at ≤768 px, and the reason is touch — there is no hover, and a readout
+that chases the finger covers the mark it describes. Width was a proxy for
+touch, and a bad one. **Fixed:** the gate is now
+`(hover: hover) and (pointer: fine)`. A fine pointer keeps the hover tooltip at
+every width; everything else gets the same readout **on tap, anchored to the
+top of the plot**, which is not hover-following and does not engage 5.5.
+
+Verified on an emulated touch context (`has_touch`, coarse pointer), not on a
+narrow window: all five charts return `triggerOn: 'click'` with the anchored
+position function, and the readout renders at top + 4 px inside the host. On a
+mouse at 465 px and 1040 px it stays `mousemove|mouseout`. **465 px now has a
+readout where the old gate gave it none.**
+
+The provenance strip stays at **three** segments — 4.4's fourth is required
+only where a control changes what is shown, and a readout changes nothing.
+K5 re-checked at 320, 390 and 465: `[3, 3, 3, 3, 3]`.
+
 ## 3 · Renders handed to the panel
 
 **Twelve files: five charts at two widths, plus a full-page render at each.**
