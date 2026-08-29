@@ -135,24 +135,51 @@
       trigger: opts.trigger || 'item',
       confine: true,
       appendToBody: false,
-      // On touch the readout is summoned by a tap and pinned to the top-left
-      // of the chart, clear of the finger and of the mark being read.
-      //
-      // BOTH triggers fire on the touch path, deliberately. Aaron saw the
-      // axis line appear on a real phone with no box, which 'click' alone
-      // cannot explain and which no emulated context here reproduces -- so
-      // this stops relying on one event arriving. 'mouseout' is left OUT of
-      // the touch list: a browser that synthesises mouse events for a tap
-      // often fires mousemove then mouseout immediately, which would show
-      // the box and hide it in the same gesture.
-      //
-      // The position is a plain [x, y] array rather than the callback that
-      // was here before. The callback read size.contentSize, and a device
-      // that reports that differently would place the box out of view --
-      // which is exactly what "line but no box" looks like. An array cannot
-      // fail that way.
+      // BOTH triggers fire on the touch path: a tap arrives as a click, and
+      // a browser that synthesises mouse events sends mousemove. 'mouseout'
+      // is deliberately NOT in the touch list -- a synthesised tap often
+      // fires mousemove then mouseout in one gesture, which would show the
+      // box and hide it again before it could be read.
       triggerOn: L.tapTip ? 'mousemove|click' : 'mousemove|mouseout',
-      position: L.tapTip ? [8, 8] : undefined,
+      // ANCHOR THE READOUT TO THE TAP, NOT TO THE TOP OF THE CHART.
+      //
+      // Two earlier attempts pinned it to the container's top-left -- one at
+      // [centred, 4], one at [8, 8]. Both are the same bug and both looked
+      // fine in every test, because every test called scrollIntoView first
+      // and so put the container's top back on screen. On a phone you scroll
+      // until the PLOT fills the screen, which puts the title and subtitle
+      // above the fold; the box was rendering up there, off-screen, while
+      // the axis line stayed visible in the plot. Aaron reported "line, no
+      // box" twice and was right twice.
+      //
+      // `pt` is the pointer position in container coordinates, so a position
+      // derived from it is always as visible as the mark just tapped. The
+      // box sits ABOVE the touch point so a finger does not cover it, drops
+      // BELOW only when there is no room above, and is clamped horizontally
+      // so it cannot run off either edge.
+      position: L.tapTip ? function (pt, params, dom, rect, size) {
+        var cw = size.contentSize[0], chh = size.contentSize[1];
+        var x = Math.round(pt[0] - cw / 2);
+        x = Math.max(4, Math.min(x, size.viewSize[0] - cw - 4));
+        var y = Math.round(pt[1] - chh - 18);
+        // Clamp against the VIEWPORT, not the container. Clamping to "y >= 4"
+        // in container coordinates is the original bug in miniature: with the
+        // container's top scrolled above the fold, container-y 4 is still off
+        // screen. Caught by testing c5 with a tap near the top of its plot.
+        var box = dom && dom.parentNode && dom.parentNode.getBoundingClientRect
+                  ? dom.parentNode.getBoundingClientRect() : null;
+        if (box) {
+          var minY = Math.max(4, 8 - box.top);
+          var maxY = Math.min(size.viewSize[1] - chh - 4,
+                              window.innerHeight - 8 - chh - box.top);
+          if (y < minY) y = Math.round(pt[1] + 26);
+          if (y < minY) y = minY;
+          if (maxY > minY && y > maxY) y = maxY;
+        } else if (y < 4) {
+          y = Math.round(pt[1] + 26);
+        }
+        return [x, y];
+      } : undefined,
       axisPointer: opts.trigger === 'axis' ? { type: 'line' } : undefined,
       formatter: opts.formatter
     };
@@ -726,100 +753,6 @@
         ' dispositions, with ' + (d.length - juryRank) + ' smaller ones below it.',
       ariaLabel: 'Sorted bar chart: closed contract matters by disposition.'
     });
-  })();
-  // ---------------------------------------------------------------------
-  // TEMPORARY FIELD DIAGNOSTIC — remove once the touch readout is settled.
-  //
-  // Gated on ?diag=1 so no ordinary reader ever sees it. It exists because
-  // the failure is on a real handset and reproduces in NO emulated context
-  // available here: coarse pointer, hover:none, has_touch with and without
-  // is_mobile all show the readout. Rather than keep guessing at a device I
-  // cannot instrument, this makes the device report for itself.
-  //
-  // The load-bearing line is `zr` — ECharts' own event layer. If zr never
-  // counts a click, the tap is not reaching the chart at all and no tooltip
-  // configuration could have fixed it. If zr counts the click and the node
-  // is still absent or invisible, the fault is in showing the box.
-  // ---------------------------------------------------------------------
-  (function fieldDiag() {
-    if (!/[?&]diag=1/.test(location.search)) return;
-
-    var box = document.createElement('div');
-    box.setAttribute('style',
-      'position:fixed;left:0;right:0;top:0;z-index:99999;background:#232B27;' +
-      'color:#FCFCFA;font:11px/1.4 ui-monospace,Menlo,Consolas,monospace;' +
-      'padding:8px 10px;max-height:60vh;overflow:auto;white-space:pre-wrap;');
-    document.body.appendChild(box);
-    document.body.style.paddingTop = '150px';
-
-    var dom = { touchstart: 0, pointerdown: 0, mousedown: 0,
-                mousemove: 0, click: 0 };
-    var zr = { click: 0, mousemove: 0, mousedown: 0, globalout: 0 };
-    var errs = [];
-    window.addEventListener('error', function (e) {
-      errs.push((e.message || 'error') + ' @' + (e.lineno || '?'));
-    });
-
-    var host = el('c2');
-    if (host) {
-      Object.keys(dom).forEach(function (t) {
-        host.addEventListener(t, function () { dom[t]++; paint(); },
-                              { passive: true });
-      });
-      try {
-        var z = echarts.getInstanceByDom(host).getZr();
-        Object.keys(zr).forEach(function (t) {
-          z.on(t, function () { zr[t]++; paint(); });
-        });
-      } catch (e) { errs.push('zr bind failed: ' + e.message); }
-    }
-
-    function mq(q) { try { return matchMedia(q).matches; } catch (e) { return '?'; } }
-
-    function tipState(id) {
-      var h = el(id);
-      if (!h) return id + ': no host';
-      var ch = echarts.getInstanceByDom(h);
-      if (!ch) return id + ': no chart instance';
-      var t = ch.getOption().tooltip;
-      t = Array.isArray(t) ? t[0] : t;
-      var line = id + ' show=' + !!(t && t.show) + ' trig=' + (t && t.triggerOn) +
-                 ' pos=' + (t && JSON.stringify(t.position));
-      var nodes = [].slice.call(h.querySelectorAll('div')).filter(function (d) {
-        return /position:\s*absolute/.test(d.getAttribute('style') || '') &&
-               (d.textContent || '').trim().length > 3;
-      });
-      if (!nodes.length) return line + '\n     node: NONE';
-      var d = nodes[nodes.length - 1], cs = getComputedStyle(d),
-          r = d.getBoundingClientRect(), hr = h.getBoundingClientRect();
-      return line + '\n     node vis=' + cs.visibility + ' op=' + cs.opacity +
-             ' z=' + cs.zIndex + ' chars=' + (d.textContent || '').trim().length +
-             '\n     at ' + Math.round(r.left - hr.left) + ',' +
-             Math.round(r.top - hr.top) + ' size ' + Math.round(r.width) + 'x' +
-             Math.round(r.height) + ' onscreen=' +
-             (r.width > 0 && r.height > 0 && r.bottom > 0 &&
-              r.top < innerHeight && r.right > 0 && r.left < innerWidth);
-    }
-
-    function paint() {
-      box.textContent =
-        'DIAG — tap a point on CHART 2, then screenshot this whole box.\n' +
-        'hover:hover=' + mq('(hover: hover)') +
-        '  hover:none=' + mq('(hover: none)') + '\n' +
-        'pointer:fine=' + mq('(pointer: fine)') +
-        '  pointer:coarse=' + mq('(pointer: coarse)') +
-        '  touchPts=' + navigator.maxTouchPoints + '\n' +
-        'width=' + document.documentElement.clientWidth +
-        '  dpr=' + window.devicePixelRatio +
-        '  echarts=' + (window.echarts ? echarts.version : 'MISSING') + '\n' +
-        'DOM events on c2:  ' + JSON.stringify(dom) + '\n' +
-        'ZR  events on c2:  ' + JSON.stringify(zr) + '\n' +
-        tipState('c2') + '\n' + tipState('c1') + '\n' +
-        (errs.length ? 'JS ERRORS: ' + errs.slice(0, 3).join(' | ')
-                     : 'no JS errors');
-    }
-    paint();
-    setInterval(paint, 400);
   })();
 
 })();
