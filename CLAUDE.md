@@ -1,8 +1,9 @@
 # Cascadia Matter Ledger — what an agent needs to know
 
 A governed dimensional model of the **public federal civil docket**, with
-legal-operations certified measures on top. Data layer only so far. It
-publishes nothing yet and has no git remote.
+legal-operations certified measures on top. The remote is
+`RobbinsAnalytics/cascadia-matter-ledger` on GitHub; `main` and
+`build/frontend` both track it.
 
 **The estate's session rules — surfaces, guards, and the traps that have each
 cost a session — are at
@@ -75,10 +76,17 @@ confirm both guards are behaving.
 
 ## Publishing
 
-**Nothing here publishes yet, and there is no remote.** The frontend is a later
-session. `governance/chart-review.md` exists and is empty, ready for it; the
-binding standard is `CHART-REVIEW.md` and `VIZ-PRINCIPLES.md` in
-`cascadia-standards/design-system/`, not the copies in the Job Search project.
+**There is a remote, and pushing to it is a deliberate act.** It is
+`https://github.com/RobbinsAnalytics/cascadia-matter-ledger.git`. `git push` is
+in the `ask` list in `.claude/settings.json` and should stay there. Whether
+GitHub Pages serves `docs/` is not asserted here — check it rather than assume
+it either way.
+
+The visual layer is built, not pending: `docs/` holds the page and its renders,
+and `governance/chart-review.md` records two rounds of review, including a Rule
+7.4 reading panel. The binding standard is `CHART-REVIEW.md` and
+`VIZ-PRINCIPLES.md` in `cascadia-standards/design-system/`, not the copies in
+the Job Search project.
 
 **Nothing is published unless `src/validate_measures.py` exits zero.** It
 re-derives every published cell from the frozen file down a separately written
