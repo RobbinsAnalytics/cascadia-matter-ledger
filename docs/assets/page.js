@@ -185,14 +185,56 @@
         }
       }),
       series: [{
-        type: 'bar', data: rows.map(function (r) { return r.value; }),
+        type: 'bar',
+        data: rows.map(function (r) {
+          if (!opts.colorFor) return r.value;
+          var hue = opts.colorFor(r);
+          // Rule 2.3.7 — the mark keeps the palette value, the label takes
+          // that hue's text ink. textInkFor does the mapping so no module
+          // re-derives it.
+          return { value: r.value, itemStyle: { color: hue },
+                   label: { color: CASCADIA.textInkFor(hue) } };
+        }),
         itemStyle: { color: C.evergreen },
-        label: { show: true, position: 'right', fontFamily: SANS, fontSize: 12,
-                 color: INK.evergreen,
+        label: { show: !opts.range, position: 'right', fontFamily: SANS,
+                 fontSize: 12, color: INK.evergreen,
                  formatter: function (p) {
                    return opts.valueLabel(rows[p.dataIndex]);
                  } }
-      }]
+      }].concat(!opts.range ? [] : [{
+        // The value label, carried past the far end of the whisker so it sits
+        // clear of every mark.
+        type: 'scatter', symbolSize: 0, silent: true,
+        data: rows.map(function (r, i) { return [r.p75, i]; }),
+        label: { show: true, position: 'right', distance: 8, fontFamily: SANS,
+                 fontSize: 12, color: INK.evergreen,
+                 formatter: function (p) {
+                   return opts.valueLabel(rows[p.dataIndex]);
+                 } }
+      }, {
+        // Rule 4.5 — uncertainty encoded, not asserted away. Two seats asked
+        // for a spread: "no variance or spread measure - an IQR, a range -
+        // beyond the single median dot per category". The quartiles were in
+        // the measure and the table all along; they were not on the canvas.
+        // Drawn as a whisker, so the channel is shape and it survives
+        // grayscale.
+        type: 'custom', silent: true,
+        renderItem: function (params, api) {
+          var i = api.value(0);
+          var r = rows[i];
+          if (!r || r.p25 == null) return null;
+          var a = api.coord([r.p25, i]), c2 = api.coord([r.p75, i]);
+          var cap = Math.max(6, api.size([0, 1])[1] * 0.28);
+          var st = { stroke: C.basalt, lineWidth: 1.5, fill: null };
+          return { type: 'group', children: [
+            { type: 'line', shape: { x1: a[0], y1: a[1], x2: c2[0], y2: c2[1] }, style: st },
+            { type: 'line', shape: { x1: a[0], y1: a[1] - cap, x2: a[0], y2: a[1] + cap }, style: st },
+            { type: 'line', shape: { x1: c2[0], y1: c2[1] - cap, x2: c2[0], y2: c2[1] + cap }, style: st }
+          ] };
+        },
+        encode: { x: [1, 2], y: 0 },
+        data: rows.map(function (r, i) { return [i, r.p25, r.p75]; })
+      }])
     });
     cascadiaResize(host, ch);
     cascadiaProvenance(host, { source: SOURCE, asOf: ASOF, flags: opts.flags });
@@ -207,7 +249,8 @@
     var host = el('c1'), L = layout(host), d = D.c1;
     var c1Finding = 'Seven rules separate a nonsense answer from a defensible one — and one of them moves it ' +
       nf(Math.round(Math.abs(d.dominant.delta))) + ' days';
-    var c1Sub = 'Days from filing to termination, contract matters. Each bar is one governance rule applied to the same query. Zero is on the axis because the ungoverned answer is negative.';
+    var c1Sub = 'Days from filing to termination across ' + nf(D.c1.population) +
+      ' closed federal civil contract matters. Each bar is one governance rule applied to the same query. Zero is on the axis because the ungoverned answer is negative.';
     var c1Top = titleTop(L.w, c1Finding, c1Sub);
     host.style.height = ((L.narrow ? 470 : 380) + c1Top) + 'px';
     var ch = echarts.init(host, 'cascadia');
@@ -370,10 +413,11 @@
     var yMin = Math.floor((lo - 30) / 25) * 25;
     // K3: reserved headroom. The annotation goes in space the axis makes for
     // it, never over a mark.
-    // Headroom is reserved only where the annotation is drawn in the plot.
-    // At narrow widths it moves out (5.5 step 4), so reserving it there would
-    // leave a third of the plot empty for nothing.
-    var yMax = Math.ceil((hi + (layout(host).narrow ? 25 : 120)) / 25) * 25;
+    // One axis for every width. Reserving headroom only on desktop made the
+    // phone version's gridlines 50 days apart where desktop's were 100, and a
+    // seat reported the two lines looking "visually farther apart" as a
+    // result. A chart that changes its scale by viewport is two charts.
+    var yMax = Math.ceil((hi + 120) / 25) * 25;
     var c2Finding = 'Both trends agree that contract matters are getting slower — and one of them is built on an answer that is wrong by ' +
       nf(Math.round(Math.abs(D.c1.dominant.delta))) + ' days';
     var c2Sub = 'Days from filing to termination by statistical year, ' + d.years[0] + '–' +
@@ -387,11 +431,11 @@
     var ch = echarts.init(host, 'cascadia');
 
     var annotation =
-      'The broken records are invisible here: pending cases carry statistical year 2099, which falls off the end of this axis.';
+      'The broken records are invisible here: 32,767 pending cases carry statistical year 2099 and fall off the end of this axis. They are why the ungoverned headline answer is negative.';
 
     ch.setOption({
       title: cascadiaTitle(c2Finding, c2Sub, { width: L.w - 14 }),
-      grid: { left: 8, right: L.narrow ? 12 : 150, bottom: 8, top: c2Top,
+      grid: { left: 8, right: L.narrow ? 96 : 150, bottom: 8, top: c2Top,
               containLabel: true },
       // One hover reports BOTH series for the year under the pointer, which
       // is the comparison the chart is making. Gone below 769 px per 5.5.
@@ -414,13 +458,20 @@
         { name: 'Ungoverned mean', type: 'line', data: d.ungoverned,
           lineStyle: { color: C.madrona, type: 'dashed', width: 2 },
           itemStyle: { color: C.madrona }, symbol: 'circle', symbolSize: 4,
-          endLabel: { show: !L.narrow, fontFamily: SANS, fontSize: 12,
-                      color: INK.madrona, formatter: 'Ungoverned mean\n{c} days' } },
+          // Rule 5.5: the direct label on a series is NEVER dropped. Two panel
+          // seats independently reported that at phone width the lines "just
+          // end with no text" and they could not tell which was which.
+          endLabel: { show: true, fontFamily: SANS, fontSize: 12,
+                      color: INK.madrona,
+                      formatter: L.narrow ? 'mean\n{c} d'
+                                          : 'Ungoverned mean\n{c} days' } },
         { name: 'Governed median', type: 'line', data: d.governed,
           lineStyle: { color: C.evergreen, width: 2.5 },
           itemStyle: { color: C.evergreen }, symbol: 'circle', symbolSize: 4,
-          endLabel: { show: !L.narrow, fontFamily: SANS, fontSize: 12,
-                      color: INK.evergreen, formatter: 'Governed median\n{c} days' } }
+          endLabel: { show: true, fontFamily: SANS, fontSize: 12,
+                      color: INK.evergreen,
+                      formatter: L.narrow ? 'median\n{c} d'
+                                          : 'Governed median\n{c} days' } }
       ],
       legend: { show: false }
     });
@@ -428,7 +479,7 @@
     if (!L.narrow) {
       // Anchored in the reserved headroom, above both series.
       ch.setOption({ series: [{}, { markPoint: cascadiaAnnotation(
-        'The broken records are invisible here: pending cases\ncarry statistical year 2099, which falls off this axis.',
+        '32,767 pending cases carry statistical year 2099 and fall off\nthis axis. They are why the ungoverned headline answer\nis negative — the chart above shows it.',
         { coord: [Math.round(d.years.length * 0.42), yMax - 22],
           color: C.evergreen, position: 'bottom', distance: 4, width: 340,
           container: host }) }] });
@@ -495,12 +546,22 @@
              .map(function (r) {
                var g = r.group.indexOf('before') === 0 ? 'before issue' : 'after issue';
                return { label: r.description + '\n(' + g + ')',
-                        n: r.n, value: r.n, pct: r.pct, median: r.median };
+                        n: r.n, value: r.n, pct: r.pct, median: r.median,
+                        before: r.group.indexOf('before') === 0 };
              }),
       baseHeight: 440, units: 'matters',
       finding: pct + '% of contract matters end before the issue is even joined',
-      subtitle: 'Closed contract matters by the point the case had reached when it was disposed of. Codes are qualified by their issue-joined group, which the codebook carries in a heading rather than in the code itself.',
-      valueLabel: function (r) { return nf(r.value); },
+      subtitle: 'All federal civil contract filings, not one department’s portfolio. Green bars are the four categories that fall before issue was joined; blue are after. “Other” is the codebook’s own residual category and its contents are not further specified by the source.',
+      // Four seats independently reported that the title's 43% "is not drawn
+      // anywhere on the chart" — bars carried raw counts and the two groups the
+      // claim compares were not visually separated. Both are now on the canvas.
+      // The parenthetical stays on every label, so the split also survives
+      // grayscale on the text channel.
+      colorFor: function (r) { return r.before ? C.evergreen : C.glacier; },
+      valueLabel: function (r) {
+        return nf(r.value) + '   ' +
+               (r.pct < 0.05 ? '<0.1' : r.pct.toFixed(1)) + '%';
+      },
       tooltip: function (r) {
         return r.label.replace('\n', ' ') + '<br>' + nf(r.n) + ' matters · ' +
                r.pct + '%' + (r.median ? ' · median ' + r.median + ' days' : '');
@@ -525,11 +586,14 @@
               return { label: r.label, n: r.n, value: r.median,
                        p25: r.p25, p75: r.p75 };
             }),
-      inverse: true, showN: true, baseHeight: 430, units: 'days',
+      inverse: true, showN: true, baseHeight: 430, units: 'days', range: true,
       finding: 'Median time to resolve runs from ' + d[0].median + ' to ' +
                d[d.length - 1].median + ' days depending on the kind of contract dispute',
-      subtitle: 'Median days from filing to termination, closed contract matters, by nature of suit. Category size is stated on every bar because a median over ' +
-        nf(minN) + ' matters and one over ' + nf(d[d.length - 1].n) + ' are not the same claim.',
+      subtitle: (layout(el('c4')).narrow
+        ? 'Median days from filing to termination, closed contract matters, by nature of suit. Category size is on every bar; medians over very different populations are not the same claim. The whisker is the 25th to 75th percentile.'
+        : 'Median days from filing to termination, closed contract matters, by nature of suit. Category size is stated on every bar because a median over ' +
+          nf(minN) + ' matters and one over ' + nf(d[d.length - 1].n) +
+          ' are not the same claim. The whisker on each bar is the 25th to 75th percentile.'),
       valueLabel: function (r) { return r.value + ' d'; },
       tooltip: function (r) {
         return r.label + '<br>median ' + r.value + ' days · 25th ' + r.p25 +
@@ -550,6 +614,8 @@
     var d = D.c5;
     var settled = d.filter(function (r) { return r.label === 'settled'; })[0];
     var jury = d.filter(function (r) { return r.label === 'jury verdict'; })[0];
+    var juryRank = d.slice().sort(function (a, b) { return b.n - a.n; })
+                    .findIndex(function (r) { return r.label === 'jury verdict'; }) + 1;
     // Two dispositions carry the same description in the codebook's code
     // list -- code 14 is a dismissal "other", code 17 is a judgment "other".
     // Same defect class as the procedural-progress codes, one field over.
@@ -585,7 +651,8 @@
       summary: 'Sorted bar chart. The shape is dominated by two bars: settlement at ' +
         nf(settled.n) + ' matters (' + settled.pct + '%) and voluntary dismissal below it, ' +
         'with a long tail of smaller dispositions. A jury verdict, at ' + nf(jury.n) +
-        ' matters, is ' + jury.pct + '% — near the bottom of the ranking.',
+        ' matters, is ' + jury.pct + '% — ' + juryRank + 'th of ' + d.length +
+        ' dispositions, with ' + (d.length - juryRank) + ' smaller ones below it.',
       ariaLabel: 'Sorted bar chart: closed contract matters by disposition.'
     });
   })();

@@ -144,6 +144,7 @@ def main():
         "asOf": as_of,
         "c1": {"start": round(ungov, 1), "end": round(gov, 1),
                "deltas": deltas, "dominant": dominant,
+               "population": total_closed,
                "smallCount": len(small), "smallSum": small_sum},
         "c2": {"years": years,
                "ungoverned": [round(p["days"], 1) for p in tr_u],

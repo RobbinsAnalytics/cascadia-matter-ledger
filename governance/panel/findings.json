@@ -1,0 +1,210 @@
+{
+ "artifact": "Cascadia Matter Ledger",
+ "date": "2026-08-28",
+ "seats": 4,
+ "nature": "simulated",
+ "charts": 5,
+ "pre_panel_notes_recorded": true,
+ "findings": [
+  {
+   "quote": "The 43% is not drawn anywhere on the chart - no bracket, no shaded region, no subtotal bar, and bars are labeled with raw counts, not percentages",
+   "seats": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "chart": 3,
+   "defect": true,
+   "novel": true,
+   "disposition": "fixed",
+   "rule": "3.2",
+   "note": "fixed - the two groups the claim compares are now separate hues and every bar carries its share as well as its count; the four green bars sum to the headline 43%"
+  },
+  {
+   "quote": "What's actually inside 'other (after issue)' at 254,521 - that's the single largest bucket and the label tells me nothing about what it contains",
+   "seats": [
+    1,
+    2
+   ],
+   "chart": 3,
+   "defect": true,
+   "novel": true,
+   "disposition": "fixed",
+   "rule": "3.2",
+   "note": "fixed - the subtitle now states that 'Other' is the codebook's own residual category whose contents the source does not specify"
+  },
+  {
+   "quote": "On the phone those labels are gone - the lines just end with no text - and the same numbers only show up afterward in a sentence below the chart",
+   "seats": [
+    3,
+    4
+   ],
+   "chart": 2,
+   "defect": true,
+   "novel": true,
+   "disposition": "fixed",
+   "rule": "5.5",
+   "note": "fixed - end-of-line labels restored at every width, abbreviated but never dropped, with a gutter to hold them"
+  },
+  {
+   "quote": "I looked for any variance or spread measure - an IQR, a range - beyond the single median dot per category, and didn't find one",
+   "seats": [
+    1,
+    2
+   ],
+   "chart": 4,
+   "defect": true,
+   "novel": true,
+   "disposition": "fixed",
+   "rule": "4.5",
+   "note": "fixed - the 25th-75th percentile is drawn as a whisker on every bar; the quartiles were in the measure and the table all along but not on the canvas"
+  },
+  {
+   "quote": "the specific magnitude '1,062 days' isn't plotted anywhere here - it's imported from Chart 1. A reader looking at Chart 2 alone has to take the second half of the title entirely on faith",
+   "seats": [
+    4
+   ],
+   "chart": 2,
+   "defect": true,
+   "novel": true,
+   "disposition": "fixed",
+   "rule": "4.3",
+   "note": "fixed - the magnitude is now on this canvas: the annotation names the 32,767 pending records and says they are why the ungoverned answer is negative"
+  },
+  {
+   "quote": "I looked for a case count or n= somewhere on this chart - how many matters this waterfall is actually built on - and didn't find one",
+   "seats": [
+    2
+   ],
+   "chart": 1,
+   "defect": true,
+   "novel": true,
+   "disposition": "fixed",
+   "rule": "4.3",
+   "note": "fixed - the subtitle states the population the waterfall is built on"
+  },
+  {
+   "quote": "the claim 'near the bottom of the ranking' is roughly true - it's 13th of 19 - though it's not literally the bottom, since five smaller categories sit below it",
+   "seats": [
+    4
+   ],
+   "chart": 5,
+   "defect": true,
+   "novel": true,
+   "disposition": "fixed",
+   "rule": "3.2",
+   "note": "fixed - the summary now states the rank and how many sit below it, computed rather than characterised"
+  },
+  {
+   "quote": "the phone version's y-axis is compressed into 50-day gridlines instead of 100, which makes the two lines look visually farther apart than the desktop version does at a glance",
+   "seats": [
+    2
+   ],
+   "chart": 2,
+   "defect": true,
+   "novel": true,
+   "disposition": "fixed",
+   "rule": "K6",
+   "note": "fixed - one axis range at every width; the narrow-only headroom saving is gone"
+  },
+  {
+   "quote": "The floating text has no leader line pointing to what it explains, so it reads as generic commentary rather than an annotation of a specific bar",
+   "seats": [
+    4
+   ],
+   "chart": 1,
+   "defect": true,
+   "novel": false,
+   "disposition": "fixed",
+   "rule": "3.4",
+   "note": "fixed - the annotation now names the step it explains, so the link survives the distance K3 forced between text and bar"
+  },
+  {
+   "quote": "Nothing here tells me whose matters these are - ours, or every contract case filed in federal court. That distinction changes whether this chart means anything to me at all",
+   "seats": [
+    3
+   ],
+   "chart": 3,
+   "defect": true,
+   "novel": false,
+   "disposition": "fixed",
+   "rule": "4.3",
+   "note": "fixed - the subtitle states the scope: all federal civil contract filings, not one department's portfolio"
+  },
+  {
+   "quote": "nothing in this set has a dollar sign on it. Every chart is about time or case counts",
+   "seats": [
+    3
+   ],
+   "chart": 0,
+   "defect": false,
+   "novel": null,
+   "disposition": "rejected",
+   "rule": null
+  },
+  {
+   "quote": "I didn't see who owns this, or a date it was approved",
+   "seats": [
+    1
+   ],
+   "chart": 1,
+   "defect": false,
+   "novel": null,
+   "disposition": "rejected",
+   "rule": null
+  },
+  {
+   "quote": "the same category carries different text depending on viewport, which would be confusing if someone tried to cite or cross-reference a category name between the two versions",
+   "seats": [
+    4
+   ],
+   "chart": 4,
+   "defect": false,
+   "novel": null,
+   "disposition": "rejected",
+   "rule": "5.5"
+  },
+  {
+   "quote": "two smooth, parallel, plausible-looking lines that never diverge or spike is visually reassuring, not alarming",
+   "seats": [
+    4
+   ],
+   "chart": 2,
+   "defect": false,
+   "novel": null,
+   "disposition": "rejected",
+   "rule": null
+  },
+  {
+   "quote": "the near-zero bars for steps 1, 2, 3, 5, 6 are compressed to hairlines that are essentially just their number labels with no visible mark",
+   "seats": [
+    4
+   ],
+   "chart": 1,
+   "defect": false,
+   "novel": null,
+   "disposition": "rejected",
+   "rule": "4.1"
+  },
+  {
+   "quote": "The bars only show percentages, not counts. The paragraph underneath mentions 421,277 for settled, but that's not on the chart itself",
+   "seats": [
+    1
+   ],
+   "chart": 5,
+   "defect": false,
+   "novel": null,
+   "disposition": "rejected",
+   "rule": null
+  }
+ ],
+ "rejected_reasons": {
+  "no dollar figures": "The source carries no cost data at all - no spend, no timekeeper, no rate. Recorded as a stated limit in docket-to-matter.md L-03. A chart cannot invent it, and the seat's point is the strongest argument for the module's own scope statement.",
+  "no owner or approval date on the chart": "Ownership and as-of are page-level, in the disclosure block and the provenance strip. Repeating them on five canvases is not what 4.2 asks for.",
+  "category names differ between widths": "A declared abbreviation mapping, which Rule 5.5 permits explicitly and prefers to deleting a label. The mapping is in the source and named in the review.",
+  "the calm parallel lines undercut the alarm": "That is the finding, not a defect. The chart exists to show that a broken method looks reassuring in this cut.",
+  "near-zero bars are hairlines": "Drawn at true scale deliberately. Rescaling or dropping them would hide that five rules move the answer by less than a day between them, which is the honest reading.",
+  "counts not on chart 5": "Percentages are on the bars because the title makes a percentage claim; counts are in the tooltip and the table. Rule 4.4 names the tooltip as the home for full precision."
+ }
+}
