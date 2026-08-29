@@ -727,4 +727,99 @@
       ariaLabel: 'Sorted bar chart: closed contract matters by disposition.'
     });
   })();
+  // ---------------------------------------------------------------------
+  // TEMPORARY FIELD DIAGNOSTIC — remove once the touch readout is settled.
+  //
+  // Gated on ?diag=1 so no ordinary reader ever sees it. It exists because
+  // the failure is on a real handset and reproduces in NO emulated context
+  // available here: coarse pointer, hover:none, has_touch with and without
+  // is_mobile all show the readout. Rather than keep guessing at a device I
+  // cannot instrument, this makes the device report for itself.
+  //
+  // The load-bearing line is `zr` — ECharts' own event layer. If zr never
+  // counts a click, the tap is not reaching the chart at all and no tooltip
+  // configuration could have fixed it. If zr counts the click and the node
+  // is still absent or invisible, the fault is in showing the box.
+  // ---------------------------------------------------------------------
+  (function fieldDiag() {
+    if (!/[?&]diag=1/.test(location.search)) return;
+
+    var box = document.createElement('div');
+    box.setAttribute('style',
+      'position:fixed;left:0;right:0;top:0;z-index:99999;background:#232B27;' +
+      'color:#FCFCFA;font:11px/1.4 ui-monospace,Menlo,Consolas,monospace;' +
+      'padding:8px 10px;max-height:60vh;overflow:auto;white-space:pre-wrap;');
+    document.body.appendChild(box);
+    document.body.style.paddingTop = '150px';
+
+    var dom = { touchstart: 0, pointerdown: 0, mousedown: 0,
+                mousemove: 0, click: 0 };
+    var zr = { click: 0, mousemove: 0, mousedown: 0, globalout: 0 };
+    var errs = [];
+    window.addEventListener('error', function (e) {
+      errs.push((e.message || 'error') + ' @' + (e.lineno || '?'));
+    });
+
+    var host = el('c2');
+    if (host) {
+      Object.keys(dom).forEach(function (t) {
+        host.addEventListener(t, function () { dom[t]++; paint(); },
+                              { passive: true });
+      });
+      try {
+        var z = echarts.getInstanceByDom(host).getZr();
+        Object.keys(zr).forEach(function (t) {
+          z.on(t, function () { zr[t]++; paint(); });
+        });
+      } catch (e) { errs.push('zr bind failed: ' + e.message); }
+    }
+
+    function mq(q) { try { return matchMedia(q).matches; } catch (e) { return '?'; } }
+
+    function tipState(id) {
+      var h = el(id);
+      if (!h) return id + ': no host';
+      var ch = echarts.getInstanceByDom(h);
+      if (!ch) return id + ': no chart instance';
+      var t = ch.getOption().tooltip;
+      t = Array.isArray(t) ? t[0] : t;
+      var line = id + ' show=' + !!(t && t.show) + ' trig=' + (t && t.triggerOn) +
+                 ' pos=' + (t && JSON.stringify(t.position));
+      var nodes = [].slice.call(h.querySelectorAll('div')).filter(function (d) {
+        return /position:\s*absolute/.test(d.getAttribute('style') || '') &&
+               (d.textContent || '').trim().length > 3;
+      });
+      if (!nodes.length) return line + '\n     node: NONE';
+      var d = nodes[nodes.length - 1], cs = getComputedStyle(d),
+          r = d.getBoundingClientRect(), hr = h.getBoundingClientRect();
+      return line + '\n     node vis=' + cs.visibility + ' op=' + cs.opacity +
+             ' z=' + cs.zIndex + ' chars=' + (d.textContent || '').trim().length +
+             '\n     at ' + Math.round(r.left - hr.left) + ',' +
+             Math.round(r.top - hr.top) + ' size ' + Math.round(r.width) + 'x' +
+             Math.round(r.height) + ' onscreen=' +
+             (r.width > 0 && r.height > 0 && r.bottom > 0 &&
+              r.top < innerHeight && r.right > 0 && r.left < innerWidth);
+    }
+
+    function paint() {
+      box.textContent =
+        'DIAG — tap a point on CHART 2, then screenshot this whole box.\n' +
+        'hover:hover=' + mq('(hover: hover)') +
+        '  hover:none=' + mq('(hover: none)') + '\n' +
+        'pointer:fine=' + mq('(pointer: fine)') +
+        '  pointer:coarse=' + mq('(pointer: coarse)') +
+        '  touchPts=' + navigator.maxTouchPoints + '\n' +
+        'width=' + document.documentElement.clientWidth +
+        '  dpr=' + window.devicePixelRatio +
+        '  echarts=' + (window.echarts ? echarts.version : 'MISSING') + '\n' +
+        'DOM events on c2:  ' + JSON.stringify(dom) + '\n' +
+        'ZR  events on c2:  ' + JSON.stringify(zr) + '\n' +
+        tipState('c2') + '\n' + tipState('c1') + '\n' +
+        (errs.length ? 'JS ERRORS: ' + errs.slice(0, 3).join(' | ')
+                     : 'no JS errors');
+    }
+    paint();
+    setInterval(paint, 400);
+  })();
+
 })();
