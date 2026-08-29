@@ -14,7 +14,13 @@
       "Bash(git add*)",
       "Bash(git commit*)",
       "Bash(gh run*)",
-      "Bash(python .claude/hooks/hook_test_matrix.py)"
+      "Bash(python .claude/hooks/hook_test_matrix.py)",
+      "Bash(python src/pull_live_edge.py)",
+      "Bash(python src/reconcile_live_edge.py)",
+      "PowerShell(python src/pull_live_edge.py)",
+      "PowerShell(python src/reconcile_live_edge.py)",
+      "PowerShell(cd C:\\Projects\\cascadia-matter-ledger-analytics; python src/pull_live_edge.py)",
+      "PowerShell(cd C:\\Projects\\cascadia-matter-ledger-analytics; python src/reconcile_live_edge.py)"
     ],
     "ask": [
       "Bash(git push*)",
