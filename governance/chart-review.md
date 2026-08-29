@@ -402,6 +402,72 @@ The provenance strip stays at **three** segments — 4.4's fourth is required
 only where a control changes what is shown, and a readout changes nothing.
 K5 re-checked at 320, 390 and 465: `[3, 3, 3, 3, 3]`.
 
+### K6 — run, at last, and what running it showed
+
+**K6 is an `INVARIANT` in both checklists and this module had never satisfied
+it.** It requires the review to run *"at the narrowest width, the design width,
+and ±1 px either side of every declared breakpoint."* `render_charts.py`
+rendered 1040 and 320, and the module passed a Rule 7.4 reading panel on that
+basis. The check that would have caught this build's most expensive defect
+already existed and was simply not executed.
+
+**The defect it would have caught.** Chart 1 drew every negative value label
+inside its own bar, because a narrow-only branch anchored the label to the row
+centre instead of the bar's end. That branch exists below a host width of 560.
+Rendering either side of the crossing puts the two states side by side:
+
+| viewport | `narrow` | the four negative labels |
+|---|---|---|
+| 625 | true | drawn **inside** their bars |
+| 626 | false | drawn outside, clear |
+
+Demonstrated by reintroducing the defect deliberately and rendering both.
+
+**±1 px of the breakpoint is not ±1 px of the viewport, and assuming it was
+cost a round.** `layout()` branches on `host.clientWidth`; the host is about
+66 px narrower than the viewport for a full-width chart. The obvious ladder —
+559 and 561 against a declared breakpoint of 560 — leaves `narrow` **true on
+both sides**. Two renders that straddle nothing, and a ladder that looks correct
+while testing the same branch twice. `render_charts.py` now binary-searches, per
+chart and per breakpoint, for the viewport at which that chart's host actually
+crosses, and renders the pair either side of the crossing.
+
+**The ladder is derived, never typed.** `docs/assets/page.js` declares
+`CASCADIA_BREAKPOINTS` once and `layout()` reads it; the harness reads it off
+`window`. A breakpoint that is used must be declared, and a declared breakpoint
+is rendered whether or not anyone remembers it. Typing the widths in the harness
+is what let K6 go unrun.
+
+**Run of 2026-08-29:**
+
+```
+K6 ladder derived from declared breakpoints 560, 900
+  c1..c5 cross host 560 px between viewport 625 and 626
+  c1..c5 cross host 900 px between viewport 965 and 966
+  widths: 320, 625, 626, 965, 966, 1040
+  strip segments [3,3,3,3,3] at every width
+  no horizontal overflow at any width
+```
+
+Two checks now run in the same pass, both added because this build found them
+the hard way. The **real ECharts grid rect** is printed per chart per width —
+`page.js` estimated it at 146 px where the truth was 103, and since axis padding
+goes as `1/plotPx` an over-estimate *under*-reserves label room, which was the
+root of the whole label class. And **horizontal overflow** is asserted at every
+width, exiting non-zero: Rule 5.3 adopts WCAG 1.4.10 and nothing had ever tested
+it, which is how a sibling page shipped 542 px wide at a 390 px viewport
+underneath a green accessibility check.
+
+### Interaction is outside what the panel can see
+
+Every tooltip defect in this build — four rounds of them — was invisible to the
+Rule 7.4 panel by construction, because the panel reads **static renders**. No
+number of additional seats would have changed that. `src/test_touch_readout.py`
+covers the gap: it scrolls each chart's container top above the fold and asserts
+the readout lands inside the **viewport**, and it is forbidden from calling
+`scrollIntoView` — which is precisely what made three earlier rounds of tests
+pass against a page that was broken on a real phone.
+
 ## 3 · Renders handed to the panel
 
 **Twelve files: five charts at two widths, plus a full-page render at each.**
