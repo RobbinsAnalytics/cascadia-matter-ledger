@@ -15,6 +15,7 @@ the palette, the inks and the provenance strip come from the Cascadia ECharts
 theme, which is copied into docs/assets/ from cascadia-standards.
 """
 import csv
+import hashlib
 import html
 import json
 import pathlib
@@ -240,6 +241,23 @@ CAUSE_PATTERNS = [
 ]
 
 
+def asset_v(name):
+    """`assets/<name>?v=<content hash>` so a republish is never served stale.
+
+    The edge sends max-age=600 on these files and the HTML referenced them
+    with no version at all, so a reader who had the page open before a fix
+    could keep the old JavaScript for ten minutes and, if their browser held
+    it longer, indefinitely. That is indistinguishable from a bug in the fix,
+    and it cost a round of debugging exactly once.
+
+    The hash is of the file's bytes, so it changes when and only when the
+    asset does -- a build stamp would churn the URL on every publish and
+    throw away caching that is working correctly.
+    """
+    b = (DOCS / "assets" / name).read_bytes()
+    return "assets/%s?v=%s" % (name, hashlib.md5(b).hexdigest()[:10])
+
+
 def describe_not_ok(run):
     if not run:
         return "none recorded since the log began"
@@ -340,6 +358,11 @@ def render(data, f, health):
         "last_notok": describe_not_ok(notok),
         "generated": health["generated_utc"].replace("T", " ").replace("+00:00", " UTC"),
         "order": ev.get("ORDER", 0),
+        # Fingerprinted so a republish is never served from a stale cache.
+        "v_css": asset_v("cascadia.css"),
+        "v_echarts": asset_v("echarts.min.js"),
+        "v_cascadia_echarts_theme": asset_v("cascadia-echarts-theme.js"),
+        "v_page": asset_v("page.js"),
     }
     subs.update(f)
     out = TEMPLATE
@@ -365,7 +388,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <meta property="og:url" content="https://www.robbinsanalytics.com/matter-ledger/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://www.robbinsanalytics.com/assets/thumb-matter-ledger.png">
-<link rel="stylesheet" href="assets/cascadia.css">
+<link rel="stylesheet" href="@@v_css@@">
 <style>
   .answers { display:flex; flex-wrap:wrap; gap:18px; margin:18px 0 6px; }
   .answer { flex:1 1 240px; border:1px solid var(--mist,#E4E7E3); border-radius:3px;
@@ -420,9 +443,9 @@ TEMPLATE = r"""<!DOCTYPE html>
   .lede { font:17px/1.65 "Source Serif 4",Georgia,serif; max-width:70ch; }
   @media (max-width:400px) { .answer .val { font-size:27px; } }
 </style>
-<script src="assets/echarts.min.js"></script>
+<script src="@@v_echarts@@"></script>
 <!-- Local, and after ECharts so registerTheme('cascadia') finds it. -->
-<script src="assets/cascadia-echarts-theme.js"></script>
+<script src="@@v_cascadia_echarts_theme@@"></script>
 </head>
 <body>
 
@@ -631,7 +654,7 @@ independent re-derivation that gates publication is <code>src/validate_measures.
 
 </div>
 
-<script src="assets/page.js"></script>
+<script src="@@v_page@@"></script>
 </body>
 </html>
 """

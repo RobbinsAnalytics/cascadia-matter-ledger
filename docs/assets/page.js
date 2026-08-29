@@ -135,14 +135,24 @@
       trigger: opts.trigger || 'item',
       confine: true,
       appendToBody: false,
-      // On touch the readout is summoned by a tap and pinned to the top of
-      // the chart, clear of the finger and of the mark being read. On a
-      // mouse it behaves as before.
-      triggerOn: L.tapTip ? 'click' : 'mousemove|mouseout',
-      position: L.tapTip ? function (pt, params, dom, rect, size) {
-        var x = Math.round((size.viewSize[0] - size.contentSize[0]) / 2);
-        return [Math.max(4, x), 4];
-      } : undefined,
+      // On touch the readout is summoned by a tap and pinned to the top-left
+      // of the chart, clear of the finger and of the mark being read.
+      //
+      // BOTH triggers fire on the touch path, deliberately. Aaron saw the
+      // axis line appear on a real phone with no box, which 'click' alone
+      // cannot explain and which no emulated context here reproduces -- so
+      // this stops relying on one event arriving. 'mouseout' is left OUT of
+      // the touch list: a browser that synthesises mouse events for a tap
+      // often fires mousemove then mouseout immediately, which would show
+      // the box and hide it in the same gesture.
+      //
+      // The position is a plain [x, y] array rather than the callback that
+      // was here before. The callback read size.contentSize, and a device
+      // that reports that differently would place the box out of view --
+      // which is exactly what "line but no box" looks like. An array cannot
+      // fail that way.
+      triggerOn: L.tapTip ? 'mousemove|click' : 'mousemove|mouseout',
+      position: L.tapTip ? [8, 8] : undefined,
       axisPointer: opts.trigger === 'axis' ? { type: 'line' } : undefined,
       formatter: opts.formatter
     };
