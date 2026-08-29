@@ -199,6 +199,51 @@ def persist(rows, seen):
     return written
 
 
+def roster_base():
+    """The slice, as a query. Everything that bounds it is added by caller."""
+    return ("%s/dockets/?court=%s&nature_of_suit__istartswith=%s"
+            "&date_filed__gte=%s" % (API, COURT, NOS_PREFIX, SLICE_START))
+
+
+def derive_id_floor(client, state):
+    """The id below which no docket in this slice can exist. See W-05.
+
+    DERIVED, NOT TYPED. A docket row cannot be created before the case it
+    describes is filed, so every docket filed on or after SLICE_START has an
+    id above the last id created before SLICE_START. That last id is asked
+    for directly -- one request, ordered by descending id, filtered to
+    dockets created before the slice opens.
+
+    Measured 2026-08-29 in this court: floor 68,128,452, created
+    2023-12-31T13:18. The roster's own minimum is 68,868,936, above it, which
+    is the consistency check the floor has to pass.
+
+    WHAT THIS RESTS ON, STATED RATHER THAN ASSUMED. The floor is sound only
+    if id order is monotonic with creation order across that boundary. The
+    unbounded form of that question times out, so it was asked of the 500,000
+    ids immediately below the floor, where a violation would most plausibly
+    sit: nothing there is filed inside the slice, and nothing there was
+    created after the slice opened. Bands further down are unverified. If the
+    source ever backfills a docket with an out-of-order id, this floor could
+    hide it -- which is why the floor is recorded in state with the date it
+    was derived rather than being silently recomputed.
+
+    Cached in state: SLICE_START is frozen, so the floor is too.
+    """
+    if state.get("roster_id_floor"):
+        return state["roster_id_floor"]
+    data, _ = client.get("%s/dockets/?court=%s&date_created__lt=%s&order_by=-id"
+                         % (API, COURT, SLICE_START))
+    results = data.get("results", [])
+    # No result means nothing predates the slice in this court, so there is
+    # nothing to exclude and zero is the honest floor.
+    floor = results[0]["id"] if results else 0
+    state["roster_id_floor"] = floor
+    state["roster_id_floor_derived_utc"] = \
+        datetime.now(timezone.utc).isoformat(timespec="seconds")
+    return floor
+
+
 def load_state():
     if STATE.exists():
         return json.loads(STATE.read_text(encoding="utf-8"))
@@ -255,9 +300,14 @@ def main():
         # ---- PHASE A: extend the docket roster --------------------------
         roster = list(state["dockets_known"])
         roster_before = len(roster)
-        url = state["roster_cursor"] or (
-            "%s/dockets/?court=%s&nature_of_suit__istartswith=%s"
-            "&date_filed__gte=%s" % (API, COURT, NOS_PREFIX, SLICE_START))
+        floor = derive_id_floor(client, state)
+        check("roster id floor (derived)", floor)
+        url = state["roster_cursor"] or (roster_base() + "&id__gte=%d" % floor)
+        # A cursor stored before the floor existed does not carry the bound,
+        # and an unbounded cursor is exactly what could not finish. Bound it
+        # in place rather than discarding the position already paid for.
+        if "id__gte=" not in url:
+            url += "&id__gte=%d" % floor
         roster_pages = 0
         throttled = False
         throttled_roster = False
@@ -302,6 +352,40 @@ def main():
                 state["roster_complete"] = True
                 state["roster_cursor"] = None
                 break
+
+        # ---- PHASE A2: dockets created since the roster was built --------
+        # `roster_complete` is TERMINAL: the loop above is skipped forever
+        # once it is set. That was harmless only because the descent could
+        # never actually finish -- with the floor in place it can, and on the
+        # run after it does, discovery would stop dead and the live edge
+        # would quietly stop being live. Nothing would error.
+        #
+        # So the top of the range is swept every run, bounded below by the
+        # highest id already known. That is the cheap direction: an id-bounded
+        # query measured 4.3s where an unbounded month window took 103s.
+        topup_added = 0
+        topup_pages = 0
+        turl = (roster_base() + "&id__gt=%d&order_by=id" % max(roster)
+                if roster else None)
+        while (turl and roster_stalled is None
+               and client.requests_made < budget and topup_pages < 2):
+            try:
+                data, _ = client.get(turl)
+            except RateLimited:
+                throttled_roster = True
+                break
+            except (urllib.error.HTTPError, urllib.error.URLError,
+                    OSError) as exc:
+                roster_stalled = str(getattr(exc, "code", None) or exc)
+                break
+            for d in data.get("results", []):
+                if d["id"] not in roster:
+                    roster.append(d["id"])
+                    topup_added += 1
+            topup_pages += 1
+            turl = data.get("next")
+        check("roster top-up, newly created dockets", topup_added)
+
         # Consecutive stalls are the number that matters. One is upstream
         # having a bad minute; several in a row means the roster cannot be
         # completed by this query shape and the slice is capped at whatever

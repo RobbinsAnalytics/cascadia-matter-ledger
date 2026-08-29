@@ -192,21 +192,47 @@ def main():
     a("")
     a("**Variance, roster against frozen baseline: %+d.**" % variance)
     a("")
-    a("## It does not balance, and it is not supposed to yet")
+    # "yet" was right while the roster could still grow into the gap. Once
+    # the roster is complete the remaining variance is structural, and
+    # calling it temporary would tell a reader to wait for something that is
+    # never going to happen.
+    a("## It does not balance, and it is not supposed to"
+      if state.get("roster_complete") else
+      "## It does not balance, and it is not supposed to yet")
     a("")
     a("A reconciliation that always balances is not being computed. These are")
     a("the reasons this one does not, in order of size:")
     a("")
-    a("**1 · The roster is incomplete.** `roster_complete` is `%s`. The roster"
-      % state.get("roster_complete", False))
-    a("is built a page at a time inside a rate limit and is not finished, so")
-    a("the live count is a lower bound. This is the dominant term.")
-    a("")
+    # THREE STATES, NOT ONE. This section asserted "the roster is incomplete"
+    # unconditionally until 2026-08-29, because completion was unreachable --
+    # the enumerating query could not terminate, so the incomplete case was
+    # the only case. Making it terminate made this text self-contradictory:
+    # it printed "the roster is incomplete: roster_complete is True".
+    if state.get("roster_complete"):
+        for line in textwrap.wrap(
+                "**1 · The roster is complete, and the gap is not a "
+                "backlog.** `roster_complete` is `True`. The slice has been "
+                "enumerated down to a derived id floor -- see "
+                "`live-edge-design.md` W-05 -- so the %s dockets on the "
+                "roster are every docket in this slice the source will "
+                "return. The variance below is therefore structural rather "
+                "than a queue that drains, and it moves only as new cases "
+                "are filed." % format(roster, ","), width=72):
+            a(line)
+        a("")
+    else:
+        a("**1 · The roster is incomplete.** `roster_complete` is `False`.")
+        a("The roster is built a page at a time inside a rate limit and is")
+        a("not finished, so the live count is a lower bound. This is the")
+        a("dominant term.")
+        a("")
     # "It shrinks by itself" was asserted here unconditionally until
     # 2026-08-29, and a stalled roster makes that false: the term stops
     # shrinking entirely, and a reader who takes the variance as
     # self-correcting reads the coverage gap as temporary when it is not.
-    if state.get("roster_stalls", 0):
+    if state.get("roster_complete"):
+        pass          # a complete roster is neither shrinking nor stalled
+    elif state.get("roster_stalls", 0):
         stall = state.get("roster_last_stall") or {}
         n = state["roster_stalls"]
         for line in textwrap.wrap(

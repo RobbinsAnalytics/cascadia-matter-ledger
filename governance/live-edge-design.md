@@ -93,6 +93,64 @@ the first run — the window is *rolling*, so requests made before the process
 started are still inside it. Pacing to the arithmetic limit leaves no room for
 what came before.
 
+## W-05 · The roster's stop condition must be provable, not conceded
+
+*Found by running it. Three consecutive runs died of this.*
+
+The roster was enumerated by descending keyset pagination on `id`, and its
+only exit was the API returning `next: null`. To say that, the server has to
+scan to id 0 through `nature_of_suit__istartswith=190` — an unindexed text
+match across ~68 million rows. **It cannot, and it does not:** the query
+returns HTTP 504 after roughly 180 seconds, every time. The client's 120s
+timeout fires first, so three runs reported a read timeout and a 502 and none
+of them named the cause.
+
+The roster was never missing anything. It had already collected every docket
+above its own minimum and was grinding through id space that predates the
+slice, unable to prove a negative.
+
+Measured 2026-08-29, one request each:
+
+| query | result |
+|---|---|
+| unbounded descent at the stored cursor | **HTTP 504 after 180.3s** |
+| bounded month window, 2025-06 | 200 in 103.2s |
+| bounded month window, 2024-01 | **HTTP 504 after 180.3s** |
+| **500,000-id window with the same filters** | **200 in 4.3s** |
+
+Date windowing does not rescue it. Bounding by `id` does, because `id` is
+indexed and the filter then applies to a bounded scan.
+
+**The floor is derived, never typed.** A docket row cannot be created before
+the case it describes is filed, so every docket filed on or after the slice
+start has an id above the last id created before it. That id is asked for
+directly — one request, `date_created__lt=<slice start>`, ordered by
+descending `id`. In this court it is **68,128,452**, created 2023-12-31.
+The roster's own minimum, after the descent finally ran to the floor, is
+**68,130,085** — 1,633 ids above it. The floor is tight and it is checked
+against that minimum on every derivation.
+
+**What the floor rests on, stated rather than assumed.** It is sound only if
+id order is monotonic with creation order across that boundary. The unbounded
+form of that question times out like everything else here, so it was asked of
+the 500,000 ids immediately below the floor, where a violation would most
+plausibly sit: nothing there is filed inside the slice, and nothing there was
+created after the slice opened. **Bands further down are unverified.** If the
+source ever backfills a docket with an out-of-order id, this floor would hide
+it. The floor is therefore recorded in state with the date it was derived,
+rather than being silently recomputed.
+
+**Completion made a second defect reachable.** `roster_complete` is terminal —
+the enumerating loop is skipped forever once it is set. That was harmless only
+while completion was impossible. On the first run after the roster completed,
+discovery would have stopped dead and the live edge would have quietly stopped
+being live, with nothing erroring. The top of the id range is now swept every
+run, bounded below by the highest id already known, which is the cheap
+direction.
+
+> A stop condition that depends on the source conceding is not a stop
+> condition. It is a hope, and this one was false for three runs.
+
 ---
 
 ## Where the schedule lives, named explicitly
@@ -123,6 +181,7 @@ commit if it were.
 | Resumable | Watermark plus per-docket resume cursors; a killed run loses nothing |
 | Inside the limit | Budget from the binding window; clean skip when there is no headroom |
 | Bounded | Hard ceiling of 55 requests per run, and a 25-request daily reserve, so one run cannot consume the day |
+| Terminates | The roster is enumerated to a derived id floor, so completion is provable rather than conceded by the source — W-05 |
 | Honest about coverage | Completed and partial dockets are counted separately and both are published |
 | Fails loudly | Every run writes `governance/last_live_run.json` with each check and its result |
 
