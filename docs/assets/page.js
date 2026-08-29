@@ -96,10 +96,21 @@
       // width sat between the two rendered widths and so was never checked.
       labelWidth: Math.max(96, Math.min(230, Math.round(w * 0.30))),
       gridRight: narrow ? 46 : 92,
-      // Rule 5.5 drop order step 1: the tooltip is the FIRST thing to go as
-      // the chart narrows, and CHART-REVIEW fails a hover-following tooltip
-      // at <=768 px outright. The data tables carry the values either way.
-      tooltip: w > 768,
+      // What CHART-REVIEW 5.5 fails is a HOVER-FOLLOWING tooltip at <=768 px,
+      // and the reason is touch: there is no hover, and a readout that chases
+      // the finger covers the mark it is describing. The old gate here read
+      // the WIDTH instead of the capability, which got both cases wrong -- a
+      // narrow desktop window has a mouse and lost its tooltip anyway, and a
+      // phone lost it for a reason that was never about size.
+      //
+      // So: ask the pointer what it is. A fine pointer that can hover keeps
+      // the hover tooltip at every width. Everything else gets the same
+      // readout on TAP, anchored above the plot rather than under the finger
+      // -- which is not a hover-following tooltip and does not engage 5.5.
+      // The data tables remain the guaranteed layer either way (Rule 5.1).
+      tooltip: true,
+      tapTip: !(window.matchMedia &&
+                window.matchMedia('(hover: hover) and (pointer: fine)').matches),
       abbrev: function (s) { return narrow && ABBREV[s] ? ABBREV[s] : s; }
     };
   }
@@ -124,6 +135,14 @@
       trigger: opts.trigger || 'item',
       confine: true,
       appendToBody: false,
+      // On touch the readout is summoned by a tap and pinned to the top of
+      // the chart, clear of the finger and of the mark being read. On a
+      // mouse it behaves as before.
+      triggerOn: L.tapTip ? 'click' : 'mousemove|mouseout',
+      position: L.tapTip ? function (pt, params, dom, rect, size) {
+        var x = Math.round((size.viewSize[0] - size.contentSize[0]) / 2);
+        return [Math.max(4, x), 4];
+      } : undefined,
       axisPointer: opts.trigger === 'axis' ? { type: 'line' } : undefined,
       formatter: opts.formatter
     };
@@ -281,8 +300,12 @@
       var t = sp.anchor ? String(sp.to) : (sp.delta > 0 ? '+' : '') + sp.delta;
       widestLabel = Math.max(widestLabel, _m.measureText(t).width);
     });
-    var plotPx = Math.max(120,
-      L.w - 8 - L.labelWidth - (L.narrow ? 40 : 92) - 30);
+    // Measured against the real ECharts grid rect, not estimated. The old
+    // expression returned 146 px at a 320 px viewport where the grid is
+    // actually 103 -- 42% too generous. Because the padding below is
+    // proportional to 1/plotPx, an over-estimated plot UNDER-reserves room,
+    // which is the original reason labels landed on their bars.
+    var plotPx = Math.max(60, L.w - L.labelWidth - 15 - L.gridRight);
     // The axis must cover EVERY span endpoint, not just the first and last
     // answers. The running total peaks at 319.8 after step 4 and then falls
     // back to 208, so bounds taken from start and end alone cut the axis at
@@ -292,7 +315,29 @@
     var pts = [0];
     spans.forEach(function (sp) { pts.push(sp.from, sp.to); });
     var dmin = Math.min.apply(null, pts), dmax = Math.max.apply(null, pts);
-    var pad = (widestLabel + 16) * ((dmax - dmin) / plotPx);
+    // Reserving room for a label is a FIXED-POINT problem and the first
+    // version solved it once, which is why 320 px still collided after the
+    // position fix. Padding the axis widens its range, which shrinks
+    // pixels-per-unit, which shrinks the very gap the padding just bought.
+    // Solving  p * plotPx >= K * (R + 2p)  for p closes the loop:
+    //
+    //     p >= K * R / (plotPx - 2K)
+    //
+    // 2K >= plotPx means no padding can ever fit a label at both ends -- the
+    // plot is simply too narrow. Inside-the-bar placement is the usual
+    // waterfall answer and is NOT available here: paper on madrona measures
+    // 4.31:1 and 12 px text needs 4.5:1, so it would trade a collision for a
+    // contrast failure. The label column yields instead; see layout().
+    var K = widestLabel + 16;
+    var R = dmax - dmin;
+    // Can a label fit OUTSIDE the far end of a bar at both ends at all? It
+    // needs K px at each end of a plotPx-wide plot, so below 2K there is no
+    // solution at any padding -- at a 320 px viewport that is 114 px wanted
+    // in a 103 px plot. The 1.2 is headroom: at exactly 2K the data would be
+    // squeezed to nothing and the waterfall would stop showing its shape.
+    var labelsFit = plotPx > 2 * K * 1.2;
+    var pad = labelsFit ? (K * R) / (plotPx - 2 * K)
+                        : R * 0.06;
     var lo = Math.floor((dmin - pad) / 100) * 100;
     var hi = Math.ceil((dmax + pad) / 100) * 100;
     var domIdx = 0;
@@ -352,8 +397,21 @@
           return {
             value: [s.to, i],
             label: {
-              show: true, fontFamily: SANS, fontSize: 12,
-              position: rightward ? 'right' : (L.narrow ? 'top' : 'left'),
+              // Rule 5.5 drop order: where the geometry cannot seat a label
+              // outside its bar, the label is DROPPED rather than printed
+              // over the mark or squeezed inside it. Inside is not available
+              // -- paper on madrona measures 4.31:1 and 12 px text needs
+              // 4.5:1. The values stay reachable: the tap/hover readout
+              // carries them, and the data table always has.
+              show: labelsFit, fontFamily: SANS, fontSize: 12,
+              // Always OUTSIDE the bar's far end. A narrow-width special
+              // case used 'top', which anchors to the data point at the
+              // ROW'S VERTICAL CENTRE rather than to the top of the rect --
+              // so "7px above the point" was 7px into a bar whose half
+              // height is ~26px, and every leftward label was bisected by
+              // its own bar. The axis already reserves room for the widest
+              // label (see `pad`), so 'left' fits at every width.
+              position: rightward ? 'right' : 'left',
               distance: 7,
               color: s.delta >= 0 ? INK.evergreen : INK.madrona,
               formatter: s.anchor ? String(s.to)
@@ -386,7 +444,10 @@
     if (c1note) {
       var c1Out = L.w < 900;
       c1note.textContent = c1Out
-        ? 'Step 4 is the one that moves the answer: pending matters carry a termination date of 01/01/1900 — a well-formed date that is not a termination.'
+        ? ('Step 4 is the one that moves the answer: pending matters carry a termination date of 01/01/1900 — a well-formed date that is not a termination.' +
+           // Say where the numbers went. A value that is silently absent
+           // reads as a value that does not exist.
+           (labelsFit ? '' : ' At this width the step values are in the data table below, or tap a bar to read one.'))
         : '';
       c1note.style.display = c1Out ? 'block' : 'none';
     }
