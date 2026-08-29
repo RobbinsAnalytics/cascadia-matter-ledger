@@ -224,6 +224,21 @@ CAUSES = {
     "429": "the source throttled us after the backoff had already been spent",
 }
 
+# Matched on a substring, because these arrive as exception text rather than as
+# a status code and the wording is the library's, not ours. A reader needs to
+# know WHICH of four things happened -- the source refused us, the source
+# broke, the connection never completed, or our own assertion failed -- because
+# those call for four different responses. A raw exception string answers none
+# of them, and "cause recorded as The read operation timed out" is the same
+# defect the status-code mapping above was written to remove.
+CAUSE_PATTERNS = [
+    ("timed out", "the connection to the source never completed — the request "
+                  "was neither refused nor answered, and the run stopped rather "
+                  "than guess at a partial response"),
+    ("connection", "the connection to the source failed mid-walk"),
+    ("ssl", "the secure connection to the source could not be established"),
+]
+
 
 def describe_not_ok(run):
     if not run:
@@ -232,6 +247,12 @@ def describe_not_ok(run):
     when = (run.get("started_utc") or "").replace("T", " ").replace("+00:00", " UTC")
     err = str(run.get("error") or "")
     cause = CAUSES.get(err)
+    if not cause and err:
+        low = err.lower()
+        for frag, text in CAUSE_PATTERNS:
+            if frag in low:
+                cause = text
+                break
     if status.startswith(("stopped", "skipped")):
         return "%s — %s" % (when, status)
     if cause:

@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-08-29T02:23:08+00:00",
+ "started_utc": "2026-08-29T14:09:59+00:00",
  "slice": {
   "court": "cand",
   "nature_of_suit_prefix": "190",
@@ -8,7 +8,7 @@
  "checks": [
   {
    "check": "quota remaining - day",
-   "value": 75,
+   "value": 60,
    "expectation": null,
    "passed": null
   },
@@ -26,19 +26,7 @@
   },
   {
    "check": "request budget for this run",
-   "value": 50,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "dockets in roster",
-   "value": 320,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "  added this run",
-   "value": 80,
+   "value": 35,
    "expectation": null,
    "passed": null
   },
@@ -50,7 +38,7 @@
   }
  ],
  "status": "failed",
- "error": "502",
- "finished_utc": "2026-08-29T02:27:08+00:00",
+ "error": "The read operation timed out",
+ "finished_utc": "2026-08-29T14:12:44+00:00",
  "passed": false
 }

@@ -1,5 +1,5 @@
 {
- "roster_cursor": "https://www.courtlistener.com/api/rest/v4/dockets/?court=cand&cursor=cD02ODg2ODkzNg%3D%3D&date_filed__gte=2024-01-01&nature_of_suit__istartswith=190",
+ "roster_cursor": "https://www.courtlistener.com/api/rest/v4/dockets/?court=cand&cursor=cD02ODI3MDg3Nw%3D%3D&date_filed__gte=2024-01-01&nature_of_suit__istartswith=190",
  "roster_complete": false,
  "docket_watermark": 73208531,
  "dockets_known": [
@@ -324,7 +324,7 @@
   68873220,
   68868936
  ],
- "runs": 9,
+ "runs": 10,
  "recovery_note": "Watermark reset twice on 2026-08-26: once for the persist-after-walk bug (W-02), once for the first-page-only bug (W-03). Both re-walks served from cache for page one; only additional pages cost quota.",
  "partial_dockets": {
   "73172886": "https://www.courtlistener.com/api/rest/v4/docket-entries/?cursor=cD00NjIzNzQzNzk%3D&docket=73172886"

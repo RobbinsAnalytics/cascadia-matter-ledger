@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-29T02:44:00+00:00",
+ "generated_utc": "2026-08-29T17:57:31+00:00",
  "module": "cascadia-matter-ledger",
  "frozen_baseline": {
   "as_of": "2026-08-26",
@@ -27,21 +27,21 @@
    "JUDGMENT": 1
   },
   "watermark": 73208531,
-  "runs_total": 9
+  "runs_total": 10
  },
  "last_run": {
-  "started_utc": "2026-08-29T02:23:08+00:00",
-  "finished_utc": "2026-08-29T02:27:08+00:00",
+  "started_utc": "2026-08-29T14:09:59+00:00",
+  "finished_utc": "2026-08-29T14:12:44+00:00",
   "status": "failed",
   "passed": false,
-  "checks_total": 7,
+  "checks_total": 5,
   "checks_failed": [
    "run completed without error"
   ],
-  "error": "502"
+  "error": "The read operation timed out"
  },
  "run_history": {
-  "runs_recorded": 2,
+  "runs_recorded": 3,
   "history_started": "2026-08-28T18:26:59+00:00",
   "last_successful_run": {
    "started_utc": "2026-08-28T18:26:59+00:00",
@@ -56,26 +56,26 @@
    "rows_persisted": 578
   },
   "last_not_ok_run": {
-   "started_utc": "2026-08-29T02:23:08+00:00",
-   "finished_utc": "2026-08-29T02:27:08+00:00",
+   "started_utc": "2026-08-29T14:09:59+00:00",
+   "finished_utc": "2026-08-29T14:12:44+00:00",
    "status": "failed",
    "passed": false,
-   "checks_total": 7,
+   "checks_total": 5,
    "checks_failed": [
     "run completed without error"
    ],
-   "error": "502"
+   "error": "The read operation timed out"
   },
   "last_failed_run": {
-   "started_utc": "2026-08-29T02:23:08+00:00",
-   "finished_utc": "2026-08-29T02:27:08+00:00",
+   "started_utc": "2026-08-29T14:09:59+00:00",
+   "finished_utc": "2026-08-29T14:12:44+00:00",
    "status": "failed",
    "passed": false,
-   "checks_total": 7,
+   "checks_total": 5,
    "checks_failed": [
     "run completed without error"
    ],
-   "error": "502"
+   "error": "The read operation timed out"
   },
   "_note": "The history begins when the log was added, not when the module did. Earlier runs were overwritten in place and are not recoverable; they are not reconstructed here."
  },

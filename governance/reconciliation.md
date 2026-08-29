@@ -72,10 +72,10 @@ every denominator. See `docket-event-derivation.md` D-04 and D-05.
 
 | | |
 |---|---|
-| Started | 2026-08-29T02:23:08+00:00 |
+| Started | 2026-08-29T14:09:59+00:00 |
 | Status | **failed** |
-| Assertions | 7, 1 failed |
-| Error | `502` |
+| Assertions | 5, 1 failed |
+| Error | `The read operation timed out` |
 
 A run that stops early because the rate limit bound it is recorded as
 stopped, not as failed, and it says which window bound it. A run that
