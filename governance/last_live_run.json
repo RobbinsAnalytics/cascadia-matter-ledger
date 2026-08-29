@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-08-29T21:28:16+00:00",
+ "started_utc": "2026-08-29T22:39:52+00:00",
  "slice": {
   "court": "cand",
   "nature_of_suit_prefix": "190",
@@ -8,13 +8,13 @@
  "checks": [
   {
    "check": "quota remaining - day",
-   "value": 98,
+   "value": 38,
    "expectation": null,
    "passed": null
   },
   {
    "check": "quota remaining - hour",
-   "value": 43,
+   "value": 30,
    "expectation": null,
    "passed": null
   },
@@ -26,37 +26,43 @@
   },
   {
    "check": "request budget for this run",
-   "value": 43,
+   "value": 13,
    "expectation": null,
    "passed": null
   },
   {
-   "check": "dockets in roster",
-   "value": 320,
+   "check": "roster id floor (derived)",
+   "value": 68128452,
    "expectation": null,
    "passed": null
   },
   {
-   "check": "  added this run",
+   "check": "roster top-up, newly created dockets",
    "value": 0,
    "expectation": null,
    "passed": null
   },
   {
-   "check": "roster extension stalled upstream",
-   "value": "The read operation timed out",
+   "check": "dockets in roster",
+   "value": 332,
    "expectation": null,
    "passed": null
   },
   {
-   "check": "  consecutive roster stalls",
-   "value": 1,
+   "check": "  added this run",
+   "value": 12,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "roster extension stalled upstream",
+   "value": false,
    "expectation": null,
    "passed": null
   },
   {
    "check": "requests spent",
-   "value": 43,
+   "value": 13,
    "expectation": null,
    "passed": null
   },
@@ -80,7 +86,7 @@
   },
   {
    "check": "dockets COMPLETED this run",
-   "value": 26,
+   "value": 6,
    "expectation": null,
    "passed": null
   },
@@ -92,26 +98,26 @@
   },
   {
    "check": "entries derived this run",
-   "value": 722,
+   "value": 147,
    "expectation": null,
    "passed": null
   },
   {
    "check": "docket watermark (nothing below is unseen)",
-   "value": 73629936,
+   "value": 73685779,
    "expectation": null,
    "passed": null
   },
   {
    "check": "rows persisted this run",
-   "value": 658,
+   "value": 147,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-1 every entry has exactly one event type",
-   "value": 722,
-   "expectation": 722,
+   "value": 147,
+   "expectation": 147,
    "passed": true
   },
   {
@@ -122,34 +128,27 @@
   },
   {
    "check": "EV-3 UNCLASSIFIED rate percent",
-   "value": 72.71,
+   "value": 72.79,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-4 empty descriptions retained",
-   "value": 355,
-   "expectation": 355,
+   "value": 72,
+   "expectation": 72,
    "passed": true
   }
  ],
  "status": "ok",
- "notes": [
-  "roster extension stalled upstream (The read operation timed out) at the stored cursor; the cursor is preserved and the walk continued on dockets already known. The roster is NOT complete and coverage against the frozen baseline is understated by whatever this query has not yet returned."
- ],
  "event_counts": {
-  "UNCLASSIFIED": 525,
-  "ORDER": 67,
-  "MOTION": 39,
-  "NOTICE": 28,
-  "COMPLAINT": 18,
-  "STIPULATION": 15,
-  "SUMMONS": 12,
-  "RESPONSE": 11,
-  "TRANSCRIPT": 3,
-  "DECLARATION": 2,
-  "ANSWER": 2
+  "UNCLASSIFIED": 107,
+  "NOTICE": 14,
+  "ORDER": 9,
+  "MOTION": 6,
+  "SUMMONS": 5,
+  "COMPLAINT": 4,
+  "STIPULATION": 2
  },
- "finished_utc": "2026-08-29T21:41:02+00:00",
+ "finished_utc": "2026-08-29T22:43:17+00:00",
  "passed": true
 }

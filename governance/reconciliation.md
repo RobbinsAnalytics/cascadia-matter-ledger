@@ -13,28 +13,24 @@ not a lookup, and it is stated here rather than buried in a join.
 |---|---:|
 | Frozen baseline — matters in slice | **954** |
 | Frozen baseline — of those, still open | 384 |
-| Live edge — dockets on roster | **320** |
-| Live edge — dockets fully ingested | 82 |
+| Live edge — dockets on roster | **332** |
+| Live edge — dockets fully ingested | 88 |
 | Live edge — dockets partially ingested | 1 |
-| Live edge — docket entries derived | 2,834 |
+| Live edge — docket entries derived | 2,981 |
 
-**Variance, roster against frozen baseline: -634.**
+**Variance, roster against frozen baseline: -622.**
 
-## It does not balance, and it is not supposed to yet
+## It does not balance, and it is not supposed to
 
 A reconciliation that always balances is not being computed. These are
 the reasons this one does not, in order of size:
 
-**1 · The roster is incomplete.** `roster_complete` is `False`. The roster
-is built a page at a time inside a rate limit and is not finished, so
-the live count is a lower bound. This is the dominant term.
-
-**It is not currently shrinking.** Roster extension has failed upstream
-on the last run; the most recent was 2026-08-29T21:30:31+00:00 and
-returned `The read operation timed out`. Until that query returns, the
-roster is capped at the 320 dockets already known, and this variance is
-a floor rather than a lower bound that improves. Treat it as a coverage
-limit, not as a queue that drains.
+**1 · The roster is complete, and the gap is not a backlog.**
+`roster_complete` is `True`. The slice has been enumerated down to a
+derived id floor -- see `live-edge-design.md` W-05 -- so the 332 dockets
+on the roster are every docket in this slice the source will return. The
+variance below is therefore structural rather than a queue that drains,
+and it moves only as new cases are filed.
 
 **2 · The two sources count different things.** The frozen IDB is a
 case-level administrative record of every civil case reported to the
@@ -54,20 +50,20 @@ that formats the field differently.
 
 | Event type | Entries |
 |---|---:|
-| `UNCLASSIFIED` | 2,173 |
-| `ORDER` | 174 |
-| `MOTION` | 121 |
-| `NOTICE` | 111 |
-| `COMPLAINT` | 61 |
-| `SUMMONS` | 59 |
-| `STIPULATION` | 48 |
+| `UNCLASSIFIED` | 2,280 |
+| `ORDER` | 183 |
+| `MOTION` | 127 |
+| `NOTICE` | 125 |
+| `COMPLAINT` | 65 |
+| `SUMMONS` | 64 |
+| `STIPULATION` | 50 |
 | `RESPONSE` | 44 |
 | `ANSWER` | 17 |
 | `DECLARATION` | 16 |
 | `TRANSCRIPT` | 9 |
 | `JUDGMENT` | 1 |
 
-**`UNCLASSIFIED` is 76.7% and that is a health metric, not a bug.**
+**`UNCLASSIFIED` is 76.5% and that is a health metric, not a bug.**
 Most of it is entries with no description text at all — RECAP holds
 the docket line without the document. They are retained and counted
 rather than dropped, because an entry with no text is still evidence
@@ -78,9 +74,9 @@ every denominator. See `docket-event-derivation.md` D-04 and D-05.
 
 | | |
 |---|---|
-| Started | 2026-08-29T21:28:16+00:00 |
+| Started | 2026-08-29T22:39:52+00:00 |
 | Status | **ok** |
-| Assertions | 21, 0 failed |
+| Assertions | 22, 0 failed |
 
 A run that stops early because the rate limit bound it is recorded as
 stopped, not as failed, and it says which window bound it. A run that
