@@ -14,9 +14,9 @@ not a lookup, and it is stated here rather than buried in a join.
 | Frozen baseline — matters in slice | **954** |
 | Frozen baseline — of those, still open | 384 |
 | Live edge — dockets on roster | **320** |
-| Live edge — dockets fully ingested | 58 |
+| Live edge — dockets fully ingested | 82 |
 | Live edge — dockets partially ingested | 1 |
-| Live edge — docket entries derived | 2,176 |
+| Live edge — docket entries derived | 2,834 |
 
 **Variance, roster against frozen baseline: -634.**
 
@@ -27,8 +27,14 @@ the reasons this one does not, in order of size:
 
 **1 · The roster is incomplete.** `roster_complete` is `False`. The roster
 is built a page at a time inside a rate limit and is not finished, so
-the live count is a lower bound that rises on every run. This is the
-dominant term and it shrinks by itself.
+the live count is a lower bound. This is the dominant term.
+
+**It is not currently shrinking.** Roster extension has failed upstream
+on the last run; the most recent was 2026-08-29T21:30:31+00:00 and
+returned `The read operation timed out`. Until that query returns, the
+roster is capped at the 320 dockets already known, and this variance is
+a floor rather than a lower bound that improves. Treat it as a coverage
+limit, not as a queue that drains.
 
 **2 · The two sources count different things.** The frozen IDB is a
 case-level administrative record of every civil case reported to the
@@ -48,20 +54,20 @@ that formats the field differently.
 
 | Event type | Entries |
 |---|---:|
-| `UNCLASSIFIED` | 1,674 |
-| `ORDER` | 117 |
-| `NOTICE` | 89 |
-| `MOTION` | 89 |
-| `SUMMONS` | 47 |
-| `COMPLAINT` | 43 |
-| `STIPULATION` | 39 |
-| `RESPONSE` | 37 |
+| `UNCLASSIFIED` | 2,173 |
+| `ORDER` | 174 |
+| `MOTION` | 121 |
+| `NOTICE` | 111 |
+| `COMPLAINT` | 61 |
+| `SUMMONS` | 59 |
+| `STIPULATION` | 48 |
+| `RESPONSE` | 44 |
+| `ANSWER` | 17 |
 | `DECLARATION` | 16 |
-| `ANSWER` | 15 |
 | `TRANSCRIPT` | 9 |
 | `JUDGMENT` | 1 |
 
-**`UNCLASSIFIED` is 76.9% and that is a health metric, not a bug.**
+**`UNCLASSIFIED` is 76.7% and that is a health metric, not a bug.**
 Most of it is entries with no description text at all — RECAP holds
 the docket line without the document. They are retained and counted
 rather than dropped, because an entry with no text is still evidence
@@ -72,10 +78,9 @@ every denominator. See `docket-event-derivation.md` D-04 and D-05.
 
 | | |
 |---|---|
-| Started | 2026-08-29T14:09:59+00:00 |
-| Status | **failed** |
-| Assertions | 5, 1 failed |
-| Error | `The read operation timed out` |
+| Started | 2026-08-29T21:28:16+00:00 |
+| Status | **ok** |
+| Assertions | 21, 0 failed |
 
 A run that stops early because the rate limit bound it is recorded as
 stopped, not as failed, and it says which window bound it. A run that

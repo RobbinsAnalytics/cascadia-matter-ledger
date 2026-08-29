@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-29T17:57:31+00:00",
+ "generated_utc": "2026-08-29T21:41:41+00:00",
  "module": "cascadia-matter-ledger",
  "frozen_baseline": {
   "as_of": "2026-08-26",
@@ -9,55 +9,59 @@
  "live_edge": {
   "roster_dockets": 320,
   "roster_complete": false,
-  "dockets_fully_ingested": 58,
+  "roster_stalls_consecutive": 1,
+  "roster_last_stall": {
+   "utc": "2026-08-29T21:30:31+00:00",
+   "detail": "The read operation timed out",
+   "cursor": "https://www.courtlistener.com/api/rest/v4/dockets/?court=cand&cursor=cD02ODI3MDg3Nw%3D%3D&date_filed__gte=2024-01-01&nature_of_suit__istartswith=190"
+  },
+  "dockets_fully_ingested": 82,
   "dockets_partial": 1,
-  "entries_derived": 2176,
+  "entries_derived": 2834,
   "event_counts": {
-   "UNCLASSIFIED": 1674,
-   "ORDER": 117,
-   "NOTICE": 89,
-   "MOTION": 89,
-   "SUMMONS": 47,
-   "COMPLAINT": 43,
-   "STIPULATION": 39,
-   "RESPONSE": 37,
+   "UNCLASSIFIED": 2173,
+   "ORDER": 174,
+   "MOTION": 121,
+   "NOTICE": 111,
+   "COMPLAINT": 61,
+   "SUMMONS": 59,
+   "STIPULATION": 48,
+   "RESPONSE": 44,
+   "ANSWER": 17,
    "DECLARATION": 16,
-   "ANSWER": 15,
    "TRANSCRIPT": 9,
    "JUDGMENT": 1
   },
-  "watermark": 73208531,
-  "runs_total": 10
+  "watermark": 73629936,
+  "runs_total": 12
  },
  "last_run": {
-  "started_utc": "2026-08-29T14:09:59+00:00",
-  "finished_utc": "2026-08-29T14:12:44+00:00",
-  "status": "failed",
-  "passed": false,
-  "checks_total": 5,
-  "checks_failed": [
-   "run completed without error"
-  ],
-  "error": "The read operation timed out"
+  "started_utc": "2026-08-29T21:28:16+00:00",
+  "finished_utc": "2026-08-29T21:41:02+00:00",
+  "status": "ok",
+  "passed": true,
+  "checks_total": 21,
+  "checks_failed": [],
+  "error": null
  },
  "run_history": {
-  "runs_recorded": 3,
+  "runs_recorded": 5,
   "history_started": "2026-08-28T18:26:59+00:00",
   "last_successful_run": {
-   "started_utc": "2026-08-28T18:26:59+00:00",
-   "finished_utc": "2026-08-28T18:39:52+00:00",
+   "started_utc": "2026-08-29T21:28:16+00:00",
+   "finished_utc": "2026-08-29T21:41:02+00:00",
    "status": "ok",
    "passed": true,
-   "checks_total": 19,
+   "checks_total": 21,
    "checks_failed": [],
    "error": null,
-   "dockets_completed": 36,
-   "entries_derived": 1215,
-   "rows_persisted": 578
+   "dockets_completed": 26,
+   "entries_derived": 722,
+   "rows_persisted": 658
   },
   "last_not_ok_run": {
-   "started_utc": "2026-08-29T14:09:59+00:00",
-   "finished_utc": "2026-08-29T14:12:44+00:00",
+   "started_utc": "2026-08-29T20:31:55+00:00",
+   "finished_utc": "2026-08-29T20:34:10+00:00",
    "status": "failed",
    "passed": false,
    "checks_total": 5,
@@ -67,8 +71,8 @@
    "error": "The read operation timed out"
   },
   "last_failed_run": {
-   "started_utc": "2026-08-29T14:09:59+00:00",
-   "finished_utc": "2026-08-29T14:12:44+00:00",
+   "started_utc": "2026-08-29T20:31:55+00:00",
+   "finished_utc": "2026-08-29T20:34:10+00:00",
    "status": "failed",
    "passed": false,
    "checks_total": 5,
