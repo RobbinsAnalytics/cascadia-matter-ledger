@@ -83,10 +83,31 @@
     return Math.round(10 + tl * 26 + 8 + sl * 18 + 16);
   }
 
+  /**
+   * EVERY WIDTH AT WHICH THIS PAGE CHANGES ITS MIND, DECLARED IN ONE PLACE.
+   *
+   * CHART-REVIEW K6 is an INVARIANT: the review runs at the narrowest width,
+   * the design width, and +/-1 px either side of EVERY DECLARED BREAKPOINT.
+   * It was not run on this module. render_charts.py rendered 1040 and 320,
+   * so 559/561 and 899/901 were never seen -- and Chart 1's value labels were
+   * drawn inside their bars by a branch that only exists below 560. The check
+   * that would have caught the build's most expensive defect already existed.
+   *
+   * So the numbers live here rather than inline, and the render harness reads
+   * them off `window` to build its ladder. A breakpoint that is used must be
+   * declared, and a breakpoint that is declared is rendered automatically --
+   * which is the only version of K6 that cannot quietly go unrun.
+   *
+   *   BP.narrow (560)  label column, gutter and axis density change
+   *   BP.prose  (900)  Chart 1's annotation leaves the plot for the note
+   */
+  var BP = { narrow: 560, prose: 900 };
+  window.CASCADIA_BREAKPOINTS = [BP.narrow, BP.prose];
+
   /** Geometry that depends on how much room there actually is. */
   function layout(host) {
     var w = host.clientWidth || CASCADIA.minCanvasPx;
-    var narrow = w < 560;
+    var narrow = w < BP.narrow;
     return {
       w: w,
       narrow: narrow,
@@ -456,7 +477,7 @@
             }
           };
         })
-      }].concat(L.w < 900 ? [] : [{
+      }].concat(L.w < BP.prose ? [] : [{
         // Rule 3.4 — the finding is annotated on the mark that carries it.
         // Anchored in the band beside the sub-day steps, whose only marks sit
         // hard against the left edge, so no mark is overdrawn (K3).
@@ -479,7 +500,7 @@
       flags: 'every step re-derived from the frozen file; no step omitted or rescaled' });
     var c1note = el('c1-note');
     if (c1note) {
-      var c1Out = L.w < 900;
+      var c1Out = L.w < BP.prose;
       c1note.textContent = c1Out
         ? ('Step 4 is the one that moves the answer: pending matters carry a termination date of 01/01/1900 — a well-formed date that is not a termination.' +
            // Say where the numbers went. A value that is silently absent
