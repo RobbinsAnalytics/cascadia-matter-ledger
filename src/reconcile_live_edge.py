@@ -18,6 +18,7 @@ Writes:
 import json
 import pathlib
 import sys
+import textwrap
 from datetime import datetime, timezone
 
 import duckdb
@@ -119,6 +120,14 @@ def main():
         "live_edge": {
             "roster_dockets": roster,
             "roster_complete": state.get("roster_complete", False),
+            # `roster_complete: false` alone cannot distinguish "still
+            # working through it" from "the query that extends it no longer
+            # returns", and those are different claims about coverage. The
+            # stall counter resets on any roster page that does come back,
+            # so a number above 1 means the roster is capped at what is
+            # already known rather than merely unfinished.
+            "roster_stalls_consecutive": state.get("roster_stalls", 0),
+            "roster_last_stall": state.get("roster_last_stall"),
             "dockets_fully_ingested": max(0, complete),
             "dockets_partial": partial,
             "entries_derived": len(rows),
@@ -191,9 +200,32 @@ def main():
     a("**1 · The roster is incomplete.** `roster_complete` is `%s`. The roster"
       % state.get("roster_complete", False))
     a("is built a page at a time inside a rate limit and is not finished, so")
-    a("the live count is a lower bound that rises on every run. This is the")
-    a("dominant term and it shrinks by itself.")
+    a("the live count is a lower bound. This is the dominant term.")
     a("")
+    # "It shrinks by itself" was asserted here unconditionally until
+    # 2026-08-29, and a stalled roster makes that false: the term stops
+    # shrinking entirely, and a reader who takes the variance as
+    # self-correcting reads the coverage gap as temporary when it is not.
+    if state.get("roster_stalls", 0):
+        stall = state.get("roster_last_stall") or {}
+        n = state["roster_stalls"]
+        for line in textwrap.wrap(
+                "**It is not currently shrinking.** Roster extension has "
+                "failed upstream on %s; the most recent was %s and returned "
+                "`%s`. Until that query returns, the roster is capped at the "
+                "%s dockets already known, and this variance is a floor "
+                "rather than a lower bound that improves. Treat it as a "
+                "coverage limit, not as a queue that drains."
+                % ("the last run" if n == 1 else "%d consecutive runs" % n,
+                   stall.get("utc", "an unrecorded time"),
+                   stall.get("detail", "an unrecorded error"),
+                   format(roster, ",")),
+                width=72):
+            a(line)
+        a("")
+    else:
+        a("It rises on every run and this term shrinks by itself.")
+        a("")
     a("**2 · The two sources count different things.** The frozen IDB is a")
     a("case-level administrative record of every civil case reported to the")
     a("Administrative Office. RECAP holds what somebody purchased or")

@@ -261,12 +261,35 @@ def main():
         roster_pages = 0
         throttled = False
         throttled_roster = False
+        # A ROSTER FAILURE IS NOT A RUN FAILURE, and it took three dead runs
+        # to establish that. Cursor pagination over
+        # nature_of_suit__istartswith=190 dies server-side the deeper it
+        # goes: measured 2026-08-29, page one returns in 7.2s and the stored
+        # resume cursor returns HTTP 504 after 180.3s, while the walk's own
+        # docket-entries query answers in 1.7s. The 120s client timeout fires
+        # first, so it surfaces as "read operation timed out" rather than as
+        # a status code -- the 502 recorded on 2026-08-29T02:23 is this same
+        # query failing a different way.
+        #
+        # Phase A runs before phase B, so letting that reach the outer
+        # handler ended the run with 262 already-known dockets unwalked and
+        # nothing accomplished. It is treated here the way RateLimited two
+        # lines up is already treated: stop extending the roster, keep the
+        # cursor, and go do the work that is reachable. What must NOT happen
+        # is that this becomes quiet -- an incomplete roster understates
+        # coverage against the frozen baseline, so it is checked, noted, and
+        # counted across runs below.
+        roster_stalled = None
         while (not state["roster_complete"] and client.requests_made < budget
                and roster_pages < 4):
             try:
                 data, _ = client.get(url)
             except RateLimited:
                 throttled_roster = True
+                break
+            except (urllib.error.HTTPError, urllib.error.URLError,
+                    OSError) as exc:
+                roster_stalled = str(getattr(exc, "code", None) or exc)
                 break
             for d in data.get("results", []):
                 if d["id"] not in roster:
@@ -279,9 +302,32 @@ def main():
                 state["roster_complete"] = True
                 state["roster_cursor"] = None
                 break
+        # Consecutive stalls are the number that matters. One is upstream
+        # having a bad minute; several in a row means the roster cannot be
+        # completed by this query shape and the slice is capped at whatever
+        # is already known -- which is a claim about coverage, not a
+        # transient. Reset on any page that does come back.
+        if roster_stalled:
+            state["roster_stalls"] = state.get("roster_stalls", 0) + 1
+            state["roster_last_stall"] = {
+                "utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                "detail": roster_stalled,
+                "cursor": url,
+            }
+        elif roster_pages:
+            state["roster_stalls"] = 0
         state["dockets_known"] = roster
         check("dockets in roster", len(roster))
         check("  added this run", len(roster) - roster_before)
+        check("roster extension stalled upstream", roster_stalled or False)
+        if roster_stalled:
+            check("  consecutive roster stalls", state["roster_stalls"])
+            run.setdefault("notes", []).append(
+                "roster extension stalled upstream (%s) at the stored cursor; "
+                "the cursor is preserved and the walk continued on dockets "
+                "already known. The roster is NOT complete and coverage "
+                "against the frozen baseline is understated by whatever this "
+                "query has not yet returned." % roster_stalled)
 
         # ---- PHASE B: walk the roster past the watermark ----------------
         # Ascending docket id. The watermark is the highest id fully ingested,
@@ -394,7 +440,19 @@ def main():
 
         run["event_counts"] = dict(sorted(event_counts.items(),
                                           key=lambda kv: -kv[1]))
-        run["status"] = "stopped: rate limited" if throttled else "ok"
+        if roster_stalled and not dockets_done and not rows_written:
+            # The roster would not extend AND there was nothing left to walk,
+            # so this run achieved nothing. Reporting "ok" because the
+            # failure was handled would be a run claiming success for having
+            # survived. Handling a failure is not the same as doing work.
+            check("run made progress", False, True, False)
+            run["error"] = ("roster stalled upstream (%s) and no walk work "
+                            "remained" % roster_stalled)
+            run["status"] = "failed"
+        elif throttled:
+            run["status"] = "stopped: rate limited"
+        else:
+            run["status"] = "ok"
         finish(run, state, dockets_done, len(entries), event_counts)
         return 0
 
