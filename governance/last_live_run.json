@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-08-28T18:26:59+00:00",
+ "started_utc": "2026-08-29T02:23:08+00:00",
  "slice": {
   "court": "cand",
   "nature_of_suit_prefix": "190",
@@ -32,7 +32,7 @@
   },
   {
    "check": "dockets in roster",
-   "value": 240,
+   "value": 320,
    "expectation": null,
    "passed": null
   },
@@ -43,98 +43,14 @@
    "passed": null
   },
   {
-   "check": "requests spent",
-   "value": 50,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "throttle waits absorbed",
-   "value": 0,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "roster extension throttled",
+   "check": "run completed without error",
    "value": false,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "walk stopped early on rate limit",
-   "value": false,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "dockets COMPLETED this run",
-   "value": 36,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "dockets still partial",
-   "value": 1,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "entries derived this run",
-   "value": 1215,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "docket watermark (nothing below is unseen)",
-   "value": 73158928,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "rows persisted this run",
-   "value": 578,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "EV-1 every entry has exactly one event type",
-   "value": 1215,
-   "expectation": 1215,
-   "passed": true
-  },
-  {
-   "check": "EV-2 no classification without leading text",
-   "value": 0,
-   "expectation": 0,
-   "passed": true
-  },
-  {
-   "check": "EV-3 UNCLASSIFIED rate percent",
-   "value": 78.19,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "EV-4 empty descriptions retained",
-   "value": 636,
-   "expectation": 636,
-   "passed": true
+   "expectation": true,
+   "passed": false
   }
  ],
- "status": "ok",
- "event_counts": {
-  "UNCLASSIFIED": 950,
-  "ORDER": 67,
-  "NOTICE": 41,
-  "MOTION": 36,
-  "SUMMONS": 34,
-  "COMPLAINT": 26,
-  "STIPULATION": 24,
-  "RESPONSE": 16,
-  "ANSWER": 11,
-  "DECLARATION": 9,
-  "TRANSCRIPT": 1
- },
- "finished_utc": "2026-08-28T18:39:52+00:00",
- "passed": true
+ "status": "failed",
+ "error": "502",
+ "finished_utc": "2026-08-29T02:27:08+00:00",
+ "passed": false
 }

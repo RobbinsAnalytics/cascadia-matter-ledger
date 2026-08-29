@@ -213,6 +213,37 @@ def main():
         print("  %-16s %s" % (k, facts[k]))
 
 
+# §4 asks for the last failure "and its cause, in plain language. Not an error
+# code." An HTTP status on its own is an error code; a reader needs to know
+# whether it was the source refusing us, the source breaking, or our own
+# assertion failing, because those call for three different responses.
+CAUSES = {
+    "502": "the source returned a server error mid-walk — an upstream fault, "
+           "not a refusal and not a rate limit",
+    "503": "the source was unavailable mid-walk",
+    "429": "the source throttled us after the backoff had already been spent",
+}
+
+
+def describe_not_ok(run):
+    if not run:
+        return "none recorded since the log began"
+    status = run.get("status") or "not recorded"
+    when = (run.get("started_utc") or "").replace("T", " ").replace("+00:00", " UTC")
+    err = str(run.get("error") or "")
+    cause = CAUSES.get(err)
+    if status.startswith(("stopped", "skipped")):
+        return "%s — %s" % (when, status)
+    if cause:
+        return "%s — failed: %s" % (when, cause)
+    if err:
+        return "%s — failed, cause recorded as %s" % (when, err)
+    failed = run.get("checks_failed") or []
+    if failed:
+        return "%s — failed its own check: %s" % (when, failed[0])
+    return "%s — %s" % (when, status)
+
+
 def table(tid, caption, headers, rows):
     h = ["<table id=\"%s\"><caption>%s</caption><thead><tr>" % (tid, caption)]
     h += ["<th scope=\"col\">%s</th>" % html.escape(c) for c in headers]
@@ -285,8 +316,7 @@ def render(data, f, health):
                       .replace("T", " ").replace("+00:00", " UTC"),
         "last_ok_rows": fmt(ok_run.get("rows_persisted", 0)),
         "last_ok_dockets": fmt(ok_run.get("dockets_completed", 0)),
-        "last_notok": (notok.get("status") or
-                       "none recorded since the log began"),
+        "last_notok": describe_not_ok(notok),
         "generated": health["generated_utc"].replace("T", " ").replace("+00:00", " UTC"),
         "order": ev.get("ORDER", 0),
     }
