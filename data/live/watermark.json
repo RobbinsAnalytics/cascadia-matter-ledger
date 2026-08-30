@@ -1,7 +1,7 @@
 {
  "roster_cursor": null,
  "roster_complete": true,
- "docket_watermark": 73685779,
+ "docket_watermark": 74669274,
  "dockets_known": [
   74669274,
   74654359,
@@ -336,11 +336,9 @@
   68131343,
   68130085
  ],
- "runs": 13,
+ "runs": 15,
  "recovery_note": "Watermark reset twice on 2026-08-26: once for the persist-after-walk bug (W-02), once for the first-page-only bug (W-03). Both re-walks served from cache for page one; only additional pages cost quota.",
- "partial_dockets": {
-  "73698016": "https://www.courtlistener.com/api/rest/v4/docket-entries/?cursor=cD00NzI4ODE2NjQ%3D&docket=73698016"
- },
+ "partial_dockets": {},
  "roster_stalls": 0,
  "roster_last_stall": {
   "utc": "2026-08-29T21:30:31+00:00",

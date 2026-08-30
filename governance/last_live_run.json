@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-08-29T22:39:52+00:00",
+ "started_utc": "2026-08-30T15:41:27+00:00",
  "slice": {
   "court": "cand",
   "nature_of_suit_prefix": "190",
@@ -8,13 +8,13 @@
  "checks": [
   {
    "check": "quota remaining - day",
-   "value": 38,
+   "value": 45,
    "expectation": null,
    "passed": null
   },
   {
    "check": "quota remaining - hour",
-   "value": 30,
+   "value": 50,
    "expectation": null,
    "passed": null
   },
@@ -26,7 +26,7 @@
   },
   {
    "check": "request budget for this run",
-   "value": 13,
+   "value": 20,
    "expectation": null,
    "passed": null
   },
@@ -50,7 +50,7 @@
   },
   {
    "check": "  added this run",
-   "value": 12,
+   "value": 0,
    "expectation": null,
    "passed": null
   },
@@ -62,7 +62,7 @@
   },
   {
    "check": "requests spent",
-   "value": 13,
+   "value": 12,
    "expectation": null,
    "passed": null
   },
@@ -92,32 +92,32 @@
   },
   {
    "check": "dockets still partial",
-   "value": 1,
+   "value": 0,
    "expectation": null,
    "passed": null
   },
   {
    "check": "entries derived this run",
-   "value": 147,
+   "value": 175,
    "expectation": null,
    "passed": null
   },
   {
    "check": "docket watermark (nothing below is unseen)",
-   "value": 73685779,
+   "value": 74669274,
    "expectation": null,
    "passed": null
   },
   {
    "check": "rows persisted this run",
-   "value": 147,
+   "value": 175,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-1 every entry has exactly one event type",
-   "value": 147,
-   "expectation": 147,
+   "value": 175,
+   "expectation": 175,
    "passed": true
   },
   {
@@ -128,27 +128,25 @@
   },
   {
    "check": "EV-3 UNCLASSIFIED rate percent",
-   "value": 72.79,
+   "value": 94.29,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-4 empty descriptions retained",
-   "value": 72,
-   "expectation": 72,
+   "value": 57,
+   "expectation": 57,
    "passed": true
   }
  ],
  "status": "ok",
  "event_counts": {
-  "UNCLASSIFIED": 107,
-  "NOTICE": 14,
-  "ORDER": 9,
-  "MOTION": 6,
-  "SUMMONS": 5,
-  "COMPLAINT": 4,
-  "STIPULATION": 2
+  "UNCLASSIFIED": 165,
+  "COMPLAINT": 5,
+  "NOTICE": 3,
+  "SUMMONS": 1,
+  "MOTION": 1
  },
- "finished_utc": "2026-08-29T22:43:17+00:00",
+ "finished_utc": "2026-08-30T15:45:13+00:00",
  "passed": true
 }

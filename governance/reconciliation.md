@@ -14,9 +14,9 @@ not a lookup, and it is stated here rather than buried in a join.
 | Frozen baseline — matters in slice | **954** |
 | Frozen baseline — of those, still open | 384 |
 | Live edge — dockets on roster | **332** |
-| Live edge — dockets fully ingested | 88 |
-| Live edge — dockets partially ingested | 1 |
-| Live edge — docket entries derived | 2,981 |
+| Live edge — dockets fully ingested | 94 |
+| Live edge — dockets partially ingested | 0 |
+| Live edge — docket entries derived | 3,156 |
 
 **Variance, roster against frozen baseline: -622.**
 
@@ -50,12 +50,12 @@ that formats the field differently.
 
 | Event type | Entries |
 |---|---:|
-| `UNCLASSIFIED` | 2,280 |
+| `UNCLASSIFIED` | 2,445 |
 | `ORDER` | 183 |
-| `MOTION` | 127 |
-| `NOTICE` | 125 |
-| `COMPLAINT` | 65 |
-| `SUMMONS` | 64 |
+| `NOTICE` | 128 |
+| `MOTION` | 128 |
+| `COMPLAINT` | 70 |
+| `SUMMONS` | 65 |
 | `STIPULATION` | 50 |
 | `RESPONSE` | 44 |
 | `ANSWER` | 17 |
@@ -63,7 +63,7 @@ that formats the field differently.
 | `TRANSCRIPT` | 9 |
 | `JUDGMENT` | 1 |
 
-**`UNCLASSIFIED` is 76.5% and that is a health metric, not a bug.**
+**`UNCLASSIFIED` is 77.5% and that is a health metric, not a bug.**
 Most of it is entries with no description text at all — RECAP holds
 the docket line without the document. They are retained and counted
 rather than dropped, because an entry with no text is still evidence
@@ -74,7 +74,7 @@ every denominator. See `docket-event-derivation.md` D-04 and D-05.
 
 | | |
 |---|---|
-| Started | 2026-08-29T22:39:52+00:00 |
+| Started | 2026-08-30T15:41:27+00:00 |
 | Status | **ok** |
 | Assertions | 22, 0 failed |
 
