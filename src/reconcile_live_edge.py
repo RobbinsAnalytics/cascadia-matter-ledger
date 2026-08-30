@@ -310,6 +310,71 @@ def main():
     print("UNCLASSIFIED              %s%%" % pct)
     print("\nwrote governance/reconciliation.md and governance/health.json")
 
+    return rebuild_page()
+
+
+def rebuild_page():
+    """Re-render docs/index.html from the record this run just wrote.
+
+    WHY THIS IS HERE AND NOT IN THE SCHEDULED TASK'S BRIEF
+
+    docs/index.html embeds health.json verbatim and stamps itself with
+    `generated_utc`. Every run rewrites health.json, so every run that does
+    not also rebuild the page leaves the published site asserting figures the
+    repository has already superseded -- a watermark, a docket count, a
+    last-run status. That is not a cosmetic lag. The site and the record are
+    both the module's own claims about itself, and when they disagree there is
+    no way for a reader to tell which one is lying.
+
+    It happened twice before this was automated. `cafa652` is titled "Rebuild
+    the page, so the site stops contradicting the record"; one run later the
+    site was a run behind again, because the rebuild was a step a human had to
+    remember and the run itself had no opinion about it.
+
+    The rule lives in the pipeline rather than in the task brief for two
+    reasons. The brief is a SKILL.md outside the repository, so it is neither
+    version-controlled nor reviewable here, and the estate has two
+    scheduled-task stores that do not know about each other -- a step written
+    into one of them is a step that can silently not exist. And a manual
+    `reconcile_live_edge.py` is exactly as capable of stranding the page as a
+    scheduled one is, so binding the rebuild to the scheduled run would fix
+    the smaller half of the problem.
+
+    REBUILDING IS NOT PUBLISHING. This writes a file into the working tree and
+    stops. Committing it and pushing it stay Aaron's, which is what
+    `.claude/hooks/no_publish_from_scheduled_runs.py` exists to guarantee and
+    what PRINCIPLES rule 1 means by a deliberate act.
+
+    Every input build_page.py needs is committed -- data/conformed/m0*.csv,
+    data/reference/dim_*.csv, stage6_proof.json, health.json and data/live/.
+    It needs neither the frozen snapshot nor a browser, so it runs wherever
+    the reconciliation itself can run.
+
+    The chart renders under docs/renders/ are deliberately NOT regenerated:
+    that needs playwright and a local server, and the five certified charts
+    are derived from the frozen snapshot, which a live-edge run cannot move.
+    Only the full-page shots drift, they are review evidence rather than
+    anything the site serves, and `render_charts.py` refreshes them when a
+    layout change actually warrants it.
+    """
+    print("\nrebuilding docs/index.html from the record just written")
+    try:
+        import build_page
+    except ImportError as exc:                       # pragma: no cover
+        print("PAGE REBUILD FAILED: cannot import build_page (%s)" % exc)
+        return 1
+    try:
+        build_page.main()
+    except Exception as exc:                         # noqa: BLE001
+        # Deliberately broad. Whatever went wrong, the record on disk is
+        # already correct and the page is now known-stale, and that is worth
+        # more to the reader than a traceback that stops at the first cause.
+        print("PAGE REBUILD FAILED: %s: %s" % (type(exc).__name__, exc))
+        print("governance/ is correct and committed-ready; docs/index.html is"
+              " STALE and must not be published until it rebuilds.")
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
