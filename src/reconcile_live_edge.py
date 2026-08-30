@@ -358,6 +358,12 @@ def rebuild_page():
     layout change actually warrants it.
     """
     print("\nrebuilding docs/index.html from the record just written")
+    # `python src/reconcile_live_edge.py` puts src/ on the path already, but
+    # `python -m` does not, and a rebuild that skips itself over an import
+    # path is the same silent staleness this function exists to end. Same
+    # idiom build_page.live_edge_facts() uses to reach pull_live_edge.
+    if str(REPO / "src") not in sys.path:
+        sys.path.insert(0, str(REPO / "src"))
     try:
         import build_page
     except ImportError as exc:                       # pragma: no cover
