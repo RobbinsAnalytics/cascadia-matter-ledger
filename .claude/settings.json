@@ -15,6 +15,7 @@
       "Bash(git commit*)",
       "Bash(gh run*)",
       "Bash(python .claude/hooks/hook_test_matrix.py)",
+      "Bash(python src/validate*.py)",
       "Bash(python src/pull_live_edge.py)",
       "Bash(python src/reconcile_live_edge.py)",
       "PowerShell(python src/pull_live_edge.py)",

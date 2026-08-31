@@ -1,0 +1,127 @@
+# governance/freeze.toml — the module-specific half of the freeze gate.
+#
+# Instantiated from cascadia-standards/templates/freeze.example.toml v1.0.0.
+# `src/validate_freeze.py` is a verbatim copy of the template and is never
+# edited here; everything module-specific is in this file.
+#
+# READ THIS FIRST IF YOU ARE ADDING A PATH BELOW.
+#
+# This module's freeze has TWO halves and they check different things:
+#
+#   the hash gate   the 314 MB source zip is the same bytes
+#                   src/build_conformed.py:verify_freeze(), against
+#                   FREEZE_SHA256 and data/raw/cv88on.zip.sha256
+#
+#   the diff gate   the committed, derived artifacts have not moved
+#                   this file, read by src/validate_freeze.py
+#
+# The snapshot itself is gitignored on purpose — 314 MB expanding to 2.0 GB,
+# with the reason recorded in .gitignore and governance/source-register.md.
+# That is a deliberate, documented departure from PRINCIPLES rule 1's
+# mechanism, not a defect, and this file does not relitigate it.
+
+[freeze]
+module = "cascadia-matter-ledger"
+
+# Claimed out loud on the page and in interviews. Advancing it is a deliberate
+# act; see the repo's CLAUDE.md, which states the same date.
+as_of_date = "2026-08-26"
+
+# The last commit at which any protected artifact legitimately changed:
+# `8ea87f0 State the exclusion rule at sector level, not by company`, which
+# rewrote two note lines in excluded_parties.csv while leaving the match_token
+# column byte-identical, so filter behaviour was provably unchanged.
+#
+# BE PRECISE ABOUT WHAT THIS DOES AND DOES NOT VERIFY. It is strictly stronger
+# than "HEAD": it catches a COMMITTED change to a frozen artifact, which a
+# HEAD baseline cannot see. It is NOT the freeze commit and does not verify the
+# as_of_date claim across the repo's whole history.
+#
+# The freeze commit itself (68c9010, Stage 1) is deliberately not used. The
+# dimensions and measures did not exist yet at that commit — they are built in
+# stages 2 to 4 — so every one of them would have to be declared a
+# permitted_edit, and an exempt path is not a checked path. That baseline would
+# produce a gate reporting "20 paths checked, 20 exempt", which is the
+# "0 paths checked" failure wearing a better suit.
+baseline = "8ea87f09a260f97c94b08f6f6a1004b73496b6d9"
+
+# Globs, repo-relative. A pattern matching nothing FAILS the gate.
+#
+# EVERY PATH HERE MUST BE GIT-TRACKED. A gitignored path FAILS OPEN and is the
+# one trap this file exists to avoid: Path.glob matches the filesystem, not the
+# index, so an ignored file resolves and is counted — and then
+# `git diff --quiet <baseline> -- <path>` exits 0, because git reports no
+# change on a file it does not track. The path is reported as checked and
+# passing, every run, forever. It would read as protection and be none.
+protected_paths = [
+  # The authoritative freeze record: the digest the hash gate compares against.
+  "data/raw/cv88on.zip.sha256",
+
+  # The source documentation retrieved at freeze time. Frozen reference
+  # material, and the thing every code mapping in the dimensions was read out
+  # of, so a silent change here would invalidate the mappings without touching
+  # a single CSV.
+  "data/raw/*.pdf",
+
+  # The conformed dimensions and their reconciliation report — generated, never
+  # hand-edited, and named as such at the top of the reconciliation file.
+  "data/reference/*.csv",
+  "data/reference/*.json",
+  "data/reference/dimension_reconciliation.md",
+
+  # The five certified measures and their manifest. These are the published
+  # figures; if one of them moves, the as-of date above is no longer true.
+  "data/conformed/m0*.csv",
+  "data/conformed/measures_manifest.json",
+
+  # The stage 6 AI-readiness sidecar, which the page reads for charts 1 and 2.
+  "data/conformed/stage6_proof.json",
+]
+
+# ---------------------------------------------------------------------------
+# DELIBERATELY NOT PROTECTED, each with its reason. Recorded here rather than
+# omitted silently, because the next person's first instinct will be to add
+# them and three of the four would break something.
+#
+#   data/raw/cv88on.zip        Gitignored. FAILS OPEN — see the note above.
+#   data/raw/*.txt             Gitignored (the transcoded UTF-8 file). Same.
+#   data/conformed/*.duckdb    Gitignored, and rebuilt from the snapshot.
+#
+#     The snapshot's protection is the HASH, not this gate, and the hash
+#     already works. Listing it here would make this gate look stronger than
+#     it is while protecting nothing.
+#
+#   data/live/**               The live edge changes these by design, on every
+#                              scheduled run. That is the point of a live edge.
+#
+#   docs/index.html            Re-rendered by reconcile_live_edge.py on every
+#                              run, to keep the health surface level with the
+#                              record. The template's default protected_paths
+#                              lists this file; copying that default would fail
+#                              this gate on every live-edge run from then on.
+#
+#   docs/renders/*             SPLIT, and the split is not what the source
+#                              comment says. reconcile_live_edge.py states the
+#                              chart renders are deliberately not regenerated,
+#                              and observation agrees for c*.png — but the
+#                              full-page shots DO move: commit 2ac905d, a
+#                              live-edge rebuild, rewrote all six page-*.png
+#                              and left all thirty chart renders byte-identical.
+#                              So "docs/renders/*" would fail on every rebuild.
+#
+#                              The chart renders alone (docs/renders/c*.png)
+#                              would be safe from the live edge, but they are
+#                              review artifacts handed to the reading panel and
+#                              they legitimately change whenever chart code
+#                              changes — c1-320.png last moved at 024ba6a,
+#                              after the baseline above. Binding them to a
+#                              DATA-freeze baseline would make routine chart
+#                              work fail a gate about data integrity, and a
+#                              gate that cries wolf on ordinary work stops
+#                              being read. They are out on purpose.
+# ---------------------------------------------------------------------------
+
+# No permitted_edit entries. Every protected path is byte-identical to the
+# baseline, so there is nothing to except — which is the state this file should
+# stay in. An exemption is a path that is no longer checked; when one becomes
+# necessary, it needs a reason good enough to print on every run.

@@ -23,7 +23,16 @@ Thumbs.db
 # The freeze is therefore asserted by HASH, not by tracking the bytes:
 # data/raw/cv88on.zip.sha256 and governance/source-register.md are committed
 # and are the authoritative record of what was pulled and when.
-# src/validate_freeze.py re-computes the hash and fails if it moved.
+# src/build_conformed.py re-computes that hash on every build and exits
+# non-zero if it moved. This line used to name validate_freeze.py, which
+# computes no hash at all -- it is the OTHER half of the gate, comparing the
+# committed derived artifacts against a baseline with `git diff`.
+#
+# The snapshot below is deliberately NOT in that script's protected_paths.
+# A gitignored path there FAILS OPEN: Path.glob matches the filesystem, so
+# it resolves and is counted, and `git diff --quiet` then exits 0 because
+# git reports no change on a file it does not track. It would read as
+# protection and be none. See governance/freeze.toml.
 #
 # Everything DERIVED from the snapshot -- data/reference/ and data/conformed/
 # -- is committed, and is small.
