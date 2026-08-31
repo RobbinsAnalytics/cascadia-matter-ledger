@@ -105,7 +105,14 @@ def main():
 
     roster = len(state.get("dockets_known", []))
     partial = len(state.get("partial_dockets", {}))
-    complete = len(dockets_with_rows) - partial
+    # W-07. This used to be inferred as "dockets with rows on disk, minus
+    # partials", which is wrong in both directions: a docket can have rows and
+    # still be unfinished, and a docket walked to exhaustion with no entries
+    # has none. The pull now records completion when it happens, so read it.
+    ingested = set(state.get("dockets_ingested", []))
+    complete = len(ingested)
+    remaining = len([i for i in state.get("dockets_known", [])
+                     if i not in ingested])
 
     variance = roster - frozen_matters
 
@@ -129,6 +136,9 @@ def main():
             "roster_stalls_consecutive": state.get("roster_stalls", 0),
             "roster_last_stall": state.get("roster_last_stall"),
             "dockets_fully_ingested": max(0, complete),
+            # The number whose absence let a stalled backfill read as healthy
+            # for eight runs. If this is not falling, the walk is not working.
+            "dockets_remaining": remaining,
             "dockets_partial": partial,
             "entries_derived": len(rows),
             "event_counts": dict(sorted(events.items(), key=lambda kv: -kv[1])),

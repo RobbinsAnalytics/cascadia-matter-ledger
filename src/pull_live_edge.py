@@ -8,10 +8,14 @@ WHAT THIS SCRIPT GUARANTEES
 
   Never re-fetches.   Every response is written to data/live/cache/ keyed by
                       its URL and is read from there forever after. A docket
-                      already ingested is never requested again.
-  Resumable.          Progress is a watermark -- the highest docket id fully
-                      ingested. A run killed halfway loses nothing; the next
-                      run continues from the watermark.
+                      already ingested is never requested again. ONE query is
+                      exempt and must be: the discovery top-up. See W-06.
+  Resumable.          Progress is a set -- the dockets whose entry list has
+                      been exhausted. A run killed halfway loses nothing; the
+                      next run continues with whatever is not in that set.
+                      The watermark is retained as a coverage statement
+                      ("nothing above this id is unseen"), NOT as the
+                      completeness test. See W-07.
   Inside the limit.   The remaining quota is read from the API's own usage
                       endpoint, which has an independent throttle and costs
                       nothing to call. The run stops when the reserve is
@@ -150,11 +154,23 @@ class Client:
                 out[row["rate"]] = row
         return out
 
-    def get(self, url, timeout=120):
-        """Cached forever. A URL fetched once is never fetched again."""
+    def get(self, url, timeout=120, refresh=False):
+        """Cached forever, EXCEPT when refresh is set.
+
+        W-06. The permanent cache is correct for docket entries -- a page of
+        a docket's history does not change -- and catastrophic for discovery.
+        The top-up query is `id__gt=<highest known id>`, so its URL is a
+        function of the answer to the previous top-up. Cache it and the two
+        lock: the URL cannot change until the query returns something new,
+        and the query cannot return anything new because it is being served
+        a stored empty page. Runs 2026-08-29 15:46 onward replayed one empty
+        response for free, reported "0 newly created dockets", and passed
+        every check. Eight runs discovered nothing and none of them failed.
+        The live edge was not slow, it was off.
+        """
         key = hashlib.sha256(url.encode("utf-8")).hexdigest()[:32]
         path = CACHE / ("%s.json" % key)
-        if path.exists():
+        if path.exists() and not refresh:
             return json.loads(path.read_text(encoding="utf-8")), True
         data = self._raw(url, timeout=timeout)
         self.requests_made += 1
@@ -244,11 +260,38 @@ def derive_id_floor(client, state):
     return floor
 
 
+def persisted_docket_ids():
+    """Distinct dockets that have at least one entry on disk."""
+    out = LIVE / "fact_docket_event.jsonl"
+    seen = set()
+    if out.exists():
+        for line in out.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                seen.add(json.loads(line)["docket_id"])
+    return seen
+
+
 def load_state():
     if STATE.exists():
-        return json.loads(STATE.read_text(encoding="utf-8"))
+        state = json.loads(STATE.read_text(encoding="utf-8"))
+        # W-07 migration, one time only. State written before the completeness
+        # set existed cannot say which dockets are done, so it is reconstructed
+        # from what is on disk: a docket with entries persisted and no resume
+        # cursor was walked to exhaustion, because that is the only path that
+        # clears a partial. Everything else goes back on the worklist. This
+        # under-claims rather than over-claims -- a docket wrongly listed as
+        # incomplete costs one wasted request, a docket wrongly listed as
+        # complete is silently missing data forever.
+        if "dockets_ingested" not in state:
+            partial_keys = {int(k) for k in state.get("partial_dockets", {})}
+            state["dockets_ingested"] = sorted(
+                persisted_docket_ids() - partial_keys)
+            state["dockets_ingested_seeded_utc"] = \
+                datetime.now(timezone.utc).isoformat(timespec="seconds")
+        return state
     return {"roster_cursor": None, "roster_complete": False,
-            "docket_watermark": 0, "dockets_known": [], "runs": 0}
+            "docket_watermark": 0, "dockets_known": [], "runs": 0,
+            "dockets_ingested": []}
 
 
 def main():
@@ -365,12 +408,14 @@ def main():
         # query measured 4.3s where an unbounded month window took 103s.
         topup_added = 0
         topup_pages = 0
+        topup_ids = []
         turl = (roster_base() + "&id__gt=%d&order_by=id" % max(roster)
                 if roster else None)
         while (turl and roster_stalled is None
                and client.requests_made < budget and topup_pages < 2):
             try:
-                data, _ = client.get(turl)
+                # refresh=True: never served from cache. See W-06 in Client.get.
+                data, _ = client.get(turl, refresh=True)
             except RateLimited:
                 throttled_roster = True
                 break
@@ -381,6 +426,7 @@ def main():
             for d in data.get("results", []):
                 if d["id"] not in roster:
                     roster.append(d["id"])
+                    topup_ids.append(d["id"])
                     topup_added += 1
             topup_pages += 1
             turl = data.get("next")
@@ -417,13 +463,30 @@ def main():
         # Ascending docket id. The watermark is the highest id fully ingested,
         # so a run killed mid-walk resumes exactly where it stopped.
         partial = dict(state.get("partial_dockets", {}))
-        # Partial dockets are revisited regardless of the watermark. The
-        # watermark says "nothing below here is UNSEEN"; it does not say
-        # "everything below here is COMPLETE". Those are different claims and
-        # conflating them is how coverage gets overstated.
+        # W-07. Selecting the worklist as `id > watermark` was wrong, and the
+        # comment that used to sit here said why without acting on it: the
+        # watermark means "nothing ABOVE this is unseen", never "everything
+        # BELOW this is complete". The roster is extended DOWNWARD by the
+        # descent in phase A while the walk ascends, so every docket the
+        # descent found landed below a watermark that had already reached the
+        # top of the roster -- unreachable, permanently, with no error. It
+        # stranded 238 of 332 dockets, all with zero entries persisted.
+        #
+        # Completeness is now stated directly: a docket is done when its entry
+        # list has been exhausted, and that fact is stored. The watermark is
+        # kept for what it can actually support -- a coverage claim about the
+        # top of the range -- and is no longer the completeness test.
+        ingested = set(state.get("dockets_ingested", []))
         worklist = [int(k) for k in partial]
+        # The edge first, then the backfill. A newly filed docket is the whole
+        # point of this module, and an ascending worklist would bury it behind
+        # ~10 runs of backfill before it was ever fetched.
+        worklist += sorted((i for i in topup_ids
+                            if i not in ingested and str(i) not in partial),
+                           reverse=True)
         worklist += sorted(i for i in roster
-                           if i > state["docket_watermark"] and str(i) not in partial)
+                           if i not in ingested and str(i) not in partial
+                           and i not in topup_ids)
         seen = persisted_entry_ids()
         entries, event_counts = [], {}
         dockets_done = 0
@@ -476,6 +539,7 @@ def main():
                     break
             if complete:
                 partial.pop(str(docket_id), None)
+                ingested.add(docket_id)
                 dockets_done += 1
                 state["docket_watermark"] = max(state["docket_watermark"],
                                                 docket_id)
@@ -494,11 +558,15 @@ def main():
         check("walk stopped early on rate limit", throttled)
         check("dockets COMPLETED this run", dockets_done)
         check("dockets still partial", len(partial))
+        check("dockets complete, cumulative", len(ingested))
+        check("dockets still to walk", len([i for i in roster
+                                            if i not in ingested]))
         check("entries derived this run", len(entries))
         check("docket watermark (nothing below is unseen)",
               state["docket_watermark"])
         check("rows persisted this run", rows_written)
         state["partial_dockets"] = partial
+        state["dockets_ingested"] = sorted(ingested)
 
         # ---- EV assertions, governance/docket-event-derivation.md -------
         typed = sum(1 for e in entries if e["docket_event_type"])

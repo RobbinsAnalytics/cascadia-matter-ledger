@@ -151,6 +151,80 @@ direction.
 > A stop condition that depends on the source conceding is not a stop
 > condition. It is a hope, and this one was false for three runs.
 
+## W-06 · The permanent cache disabled discovery, and the fix for W-05 is what made it reachable
+
+*Found by running it. Discovery was dead for two days and every run passed.*
+
+W-05 ends by saying the top of the id range is now swept every run, bounded
+below by the highest id already known. That sweep was written, is correct, and
+**never executed after 2026-08-29 15:46.**
+
+The sweep's URL is `id__gt=<max(roster)>&order_by=id`. Its bound is the answer
+to the previous sweep. The response cache is keyed by URL and, before this
+entry, was permanent with no exceptions — so the two locked against each other:
+
+- the URL cannot change until the sweep returns a docket, and
+- the sweep cannot return a docket, because it is being handed a stored empty
+  page instead of being sent.
+
+The cached page was written 2026-08-29 15:46:54 with `results: []` and
+`next: null`. **Every run after it replayed that page, for free, and reported
+`roster top-up, newly created dockets 0`.** No request was sent, no quota was
+spent, no check failed, and the run record said `ok`. The live edge was not
+running slowly. It was not running.
+
+**The cache is exempted for this one query and must stay exempted.** A docket
+entry page is immutable and caching it forever is right; a discovery query's
+whole purpose is to return something it did not return last time. The exemption
+is `refresh=True`, bounded to at most two pages per run.
+
+> A cache keyed on a value the cache itself determines is not a cache. It is a
+> latch, and this one was closed for eight runs.
+
+## W-07 · `id > watermark` cannot express "not yet walked", and W-01 said so
+
+*Found by running it. It stranded 238 of 332 dockets.*
+
+W-01 states the rule at the top of this document: the watermark says what has
+been **seen**, not what is **complete**. The walk then selected its worklist as
+`id > watermark`, which is precisely the conflation W-01 forbids, and the
+comment above that line restated the rule without acting on it.
+
+The two phases move in opposite directions. The roster descends toward the id
+floor; the walk ascends. So every docket the descent discovered was added
+*below* a watermark the walk had already carried upward — and `id > watermark`
+can never select it again. The only re-entry path for a docket below the
+watermark is `partial_dockets`, and **a docket that was never started is not
+partial. It is absent.** Nothing errored, because nothing was wrong from the
+watermark's point of view.
+
+**It hid itself while it was still doing work.** The walk kept completing
+dockets as long as any roster id sat above the watermark — 26 on the 21:28 run,
+6 on 22:39, 6 on 2026-08-30 15:41. It reached zero only on 2026-08-31, when the
+watermark reached the roster maximum (74,669,274) and the worklist became
+permanently empty. A run reporting six dockets was already stranding the ones
+below it.
+
+**Completion is now recorded, not inferred.** `dockets_ingested` holds the
+dockets whose entry list has been exhausted, written at the moment it is
+exhausted. The worklist is `roster − ingested − partial`. The watermark is kept
+for the one claim it can support — nothing above it is unseen — and is no
+longer a completeness test.
+
+Two consequences worth stating:
+
+- **Order is edge first, then backfill.** Newly discovered dockets are walked
+  ahead of the backlog. Ascending order would have buried a newly filed docket
+  behind roughly ten runs of backfill, which would satisfy the code and defeat
+  the module.
+- **`dockets_remaining` is now published in `health.json`.** Its absence is why
+  a stalled backfill read as healthy: `dockets_fully_ingested: 94` beside
+  `roster_dockets: 332` is the same fact, and nobody has to subtract to see it.
+
+> The rule was written down first and violated four lines below it. Stating an
+> invariant in prose does not enforce it; the selection has to be unable to
+> express the wrong thing.
+
 ---
 
 ## Where the schedule lives, named explicitly
