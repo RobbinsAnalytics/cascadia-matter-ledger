@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-30T15:45:22+00:00",
+ "generated_utc": "2026-08-31T14:19:49+00:00",
  "module": "cascadia-matter-ledger",
  "frozen_baseline": {
   "as_of": "2026-08-26",
@@ -15,49 +15,50 @@
    "detail": "The read operation timed out",
    "cursor": "https://www.courtlistener.com/api/rest/v4/dockets/?court=cand&cursor=cD02ODI3MDg3Nw%3D%3D&date_filed__gte=2024-01-01&nature_of_suit__istartswith=190"
   },
-  "dockets_fully_ingested": 94,
+  "dockets_fully_ingested": 120,
+  "dockets_remaining": 212,
   "dockets_partial": 0,
-  "entries_derived": 3156,
+  "entries_derived": 4611,
   "event_counts": {
-   "UNCLASSIFIED": 2445,
-   "ORDER": 183,
-   "NOTICE": 128,
-   "MOTION": 128,
-   "COMPLAINT": 70,
-   "SUMMONS": 65,
-   "STIPULATION": 50,
-   "RESPONSE": 44,
-   "ANSWER": 17,
-   "DECLARATION": 16,
-   "TRANSCRIPT": 9,
-   "JUDGMENT": 1
+   "UNCLASSIFIED": 3481,
+   "ORDER": 295,
+   "NOTICE": 201,
+   "MOTION": 190,
+   "RESPONSE": 103,
+   "COMPLAINT": 88,
+   "SUMMONS": 88,
+   "STIPULATION": 83,
+   "TRANSCRIPT": 33,
+   "DECLARATION": 27,
+   "ANSWER": 20,
+   "JUDGMENT": 2
   },
   "watermark": 74669274,
-  "runs_total": 15
+  "runs_total": 18
  },
  "last_run": {
-  "started_utc": "2026-08-30T15:41:27+00:00",
-  "finished_utc": "2026-08-30T15:45:13+00:00",
+  "started_utc": "2026-08-31T14:10:28+00:00",
+  "finished_utc": "2026-08-31T14:19:43+00:00",
   "status": "ok",
   "passed": true,
-  "checks_total": 22,
+  "checks_total": 24,
   "checks_failed": [],
   "error": null
  },
  "run_history": {
-  "runs_recorded": 8,
+  "runs_recorded": 11,
   "history_started": "2026-08-28T18:26:59+00:00",
   "last_successful_run": {
-   "started_utc": "2026-08-30T15:41:27+00:00",
-   "finished_utc": "2026-08-30T15:45:13+00:00",
+   "started_utc": "2026-08-31T14:10:28+00:00",
+   "finished_utc": "2026-08-31T14:19:43+00:00",
    "status": "ok",
    "passed": true,
-   "checks_total": 22,
+   "checks_total": 24,
    "checks_failed": [],
    "error": null,
-   "dockets_completed": 6,
-   "entries_derived": 175,
-   "rows_persisted": 175
+   "dockets_completed": 14,
+   "entries_derived": 586,
+   "rows_persisted": 586
   },
   "last_not_ok_run": {
    "started_utc": "2026-08-30T02:10:05+00:00",

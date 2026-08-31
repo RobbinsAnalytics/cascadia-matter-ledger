@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-08-30T15:41:27+00:00",
+ "started_utc": "2026-08-31T14:10:28+00:00",
  "slice": {
   "court": "cand",
   "nature_of_suit_prefix": "190",
@@ -8,7 +8,7 @@
  "checks": [
   {
    "check": "quota remaining - day",
-   "value": 45,
+   "value": 62,
    "expectation": null,
    "passed": null
   },
@@ -26,7 +26,7 @@
   },
   {
    "check": "request budget for this run",
-   "value": 20,
+   "value": 37,
    "expectation": null,
    "passed": null
   },
@@ -62,7 +62,7 @@
   },
   {
    "check": "requests spent",
-   "value": 12,
+   "value": 37,
    "expectation": null,
    "passed": null
   },
@@ -86,7 +86,7 @@
   },
   {
    "check": "dockets COMPLETED this run",
-   "value": 6,
+   "value": 14,
    "expectation": null,
    "passed": null
   },
@@ -97,8 +97,20 @@
    "passed": null
   },
   {
+   "check": "dockets complete, cumulative",
+   "value": 120,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "dockets still to walk",
+   "value": 212,
+   "expectation": null,
+   "passed": null
+  },
+  {
    "check": "entries derived this run",
-   "value": 175,
+   "value": 586,
    "expectation": null,
    "passed": null
   },
@@ -110,14 +122,14 @@
   },
   {
    "check": "rows persisted this run",
-   "value": 175,
+   "value": 586,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-1 every entry has exactly one event type",
-   "value": 175,
-   "expectation": 175,
+   "value": 586,
+   "expectation": 586,
    "passed": true
   },
   {
@@ -128,25 +140,32 @@
   },
   {
    "check": "EV-3 UNCLASSIFIED rate percent",
-   "value": 94.29,
+   "value": 75.94,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-4 empty descriptions retained",
-   "value": 57,
-   "expectation": 57,
+   "value": 294,
+   "expectation": 294,
    "passed": true
   }
  ],
  "status": "ok",
  "event_counts": {
-  "UNCLASSIFIED": 165,
-  "COMPLAINT": 5,
-  "NOTICE": 3,
-  "SUMMONS": 1,
-  "MOTION": 1
+  "UNCLASSIFIED": 445,
+  "ORDER": 30,
+  "NOTICE": 25,
+  "RESPONSE": 22,
+  "MOTION": 16,
+  "STIPULATION": 15,
+  "SUMMONS": 11,
+  "COMPLAINT": 10,
+  "TRANSCRIPT": 6,
+  "DECLARATION": 4,
+  "JUDGMENT": 1,
+  "ANSWER": 1
  },
- "finished_utc": "2026-08-30T15:45:13+00:00",
+ "finished_utc": "2026-08-31T14:19:43+00:00",
  "passed": true
 }
