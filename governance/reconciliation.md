@@ -74,9 +74,9 @@ every denominator. See `docket-event-derivation.md` D-04 and D-05.
 
 | | |
 |---|---|
-| Started | 2026-09-05T02:09:53+00:00 |
-| Status | **ok** |
-| Assertions | 24, 0 failed |
+| Started | 2026-09-10T03:49:37+00:00 |
+| Status | **skipped: no quota headroom in the binding window** |
+| Assertions | 4, 0 failed |
 
 A run that stops early because the rate limit bound it is recorded as
 stopped, not as failed, and it says which window bound it. A run that
