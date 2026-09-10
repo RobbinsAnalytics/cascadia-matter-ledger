@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-08-31T14:10:28+00:00",
+ "started_utc": "2026-09-05T02:09:53+00:00",
  "slice": {
   "court": "cand",
   "nature_of_suit_prefix": "190",
@@ -8,7 +8,7 @@
  "checks": [
   {
    "check": "quota remaining - day",
-   "value": 62,
+   "value": 65,
    "expectation": null,
    "passed": null
   },
@@ -26,7 +26,7 @@
   },
   {
    "check": "request budget for this run",
-   "value": 37,
+   "value": 40,
    "expectation": null,
    "passed": null
   },
@@ -38,19 +38,19 @@
   },
   {
    "check": "roster top-up, newly created dockets",
-   "value": 0,
+   "value": 1,
    "expectation": null,
    "passed": null
   },
   {
    "check": "dockets in roster",
-   "value": 332,
+   "value": 333,
    "expectation": null,
    "passed": null
   },
   {
    "check": "  added this run",
-   "value": 0,
+   "value": 1,
    "expectation": null,
    "passed": null
   },
@@ -62,7 +62,7 @@
   },
   {
    "check": "requests spent",
-   "value": 37,
+   "value": 40,
    "expectation": null,
    "passed": null
   },
@@ -86,50 +86,50 @@
   },
   {
    "check": "dockets COMPLETED this run",
-   "value": 14,
+   "value": 11,
    "expectation": null,
    "passed": null
   },
   {
    "check": "dockets still partial",
-   "value": 0,
+   "value": 1,
    "expectation": null,
    "passed": null
   },
   {
    "check": "dockets complete, cumulative",
-   "value": 120,
+   "value": 184,
    "expectation": null,
    "passed": null
   },
   {
    "check": "dockets still to walk",
-   "value": 212,
+   "value": 149,
    "expectation": null,
    "passed": null
   },
   {
    "check": "entries derived this run",
-   "value": 586,
+   "value": 682,
    "expectation": null,
    "passed": null
   },
   {
    "check": "docket watermark (nothing below is unseen)",
-   "value": 74669274,
+   "value": 74713434,
    "expectation": null,
    "passed": null
   },
   {
    "check": "rows persisted this run",
-   "value": 586,
+   "value": 682,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-1 every entry has exactly one event type",
-   "value": 586,
-   "expectation": 586,
+   "value": 682,
+   "expectation": 682,
    "passed": true
   },
   {
@@ -140,32 +140,30 @@
   },
   {
    "check": "EV-3 UNCLASSIFIED rate percent",
-   "value": 75.94,
+   "value": 75.66,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-4 empty descriptions retained",
-   "value": 294,
-   "expectation": 294,
+   "value": 338,
+   "expectation": 338,
    "passed": true
   }
  ],
  "status": "ok",
  "event_counts": {
-  "UNCLASSIFIED": 445,
-  "ORDER": 30,
-  "NOTICE": 25,
-  "RESPONSE": 22,
-  "MOTION": 16,
-  "STIPULATION": 15,
-  "SUMMONS": 11,
-  "COMPLAINT": 10,
-  "TRANSCRIPT": 6,
-  "DECLARATION": 4,
-  "JUDGMENT": 1,
-  "ANSWER": 1
+  "UNCLASSIFIED": 516,
+  "ORDER": 47,
+  "MOTION": 32,
+  "RESPONSE": 25,
+  "NOTICE": 17,
+  "SUMMONS": 16,
+  "STIPULATION": 14,
+  "COMPLAINT": 9,
+  "DECLARATION": 5,
+  "JUDGMENT": 1
  },
- "finished_utc": "2026-08-31T14:19:43+00:00",
+ "finished_utc": "2026-09-05T02:19:55+00:00",
  "passed": true
 }

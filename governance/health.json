@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-31T14:19:49+00:00",
+ "generated_utc": "2026-09-05T02:20:02+00:00",
  "module": "cascadia-matter-ledger",
  "frozen_baseline": {
   "as_of": "2026-08-26",
@@ -7,7 +7,7 @@
   "slice_open_matters": 384
  },
  "live_edge": {
-  "roster_dockets": 332,
+  "roster_dockets": 333,
   "roster_complete": true,
   "roster_stalls_consecutive": 0,
   "roster_last_stall": {
@@ -15,30 +15,30 @@
    "detail": "The read operation timed out",
    "cursor": "https://www.courtlistener.com/api/rest/v4/dockets/?court=cand&cursor=cD02ODI3MDg3Nw%3D%3D&date_filed__gte=2024-01-01&nature_of_suit__istartswith=190"
   },
-  "dockets_fully_ingested": 120,
-  "dockets_remaining": 212,
-  "dockets_partial": 0,
-  "entries_derived": 4611,
+  "dockets_fully_ingested": 184,
+  "dockets_remaining": 149,
+  "dockets_partial": 1,
+  "entries_derived": 9893,
   "event_counts": {
-   "UNCLASSIFIED": 3481,
-   "ORDER": 295,
-   "NOTICE": 201,
-   "MOTION": 190,
-   "RESPONSE": 103,
-   "COMPLAINT": 88,
-   "SUMMONS": 88,
-   "STIPULATION": 83,
-   "TRANSCRIPT": 33,
-   "DECLARATION": 27,
-   "ANSWER": 20,
-   "JUDGMENT": 2
+   "UNCLASSIFIED": 6925,
+   "ORDER": 874,
+   "MOTION": 462,
+   "NOTICE": 434,
+   "RESPONSE": 328,
+   "STIPULATION": 240,
+   "SUMMONS": 182,
+   "TRANSCRIPT": 175,
+   "COMPLAINT": 135,
+   "DECLARATION": 90,
+   "ANSWER": 39,
+   "JUDGMENT": 9
   },
-  "watermark": 74669274,
-  "runs_total": 18
+  "watermark": 74713434,
+  "runs_total": 27
  },
  "last_run": {
-  "started_utc": "2026-08-31T14:10:28+00:00",
-  "finished_utc": "2026-08-31T14:19:43+00:00",
+  "started_utc": "2026-09-05T02:09:53+00:00",
+  "finished_utc": "2026-09-05T02:19:55+00:00",
   "status": "ok",
   "passed": true,
   "checks_total": 24,
@@ -46,19 +46,19 @@
   "error": null
  },
  "run_history": {
-  "runs_recorded": 11,
+  "runs_recorded": 20,
   "history_started": "2026-08-28T18:26:59+00:00",
   "last_successful_run": {
-   "started_utc": "2026-08-31T14:10:28+00:00",
-   "finished_utc": "2026-08-31T14:19:43+00:00",
+   "started_utc": "2026-09-05T02:09:53+00:00",
+   "finished_utc": "2026-09-05T02:19:55+00:00",
    "status": "ok",
    "passed": true,
    "checks_total": 24,
    "checks_failed": [],
    "error": null,
-   "dockets_completed": 14,
-   "entries_derived": 586,
-   "rows_persisted": 586
+   "dockets_completed": 11,
+   "entries_derived": 682,
+   "rows_persisted": 682
   },
   "last_not_ok_run": {
    "started_utc": "2026-08-30T02:10:05+00:00",
@@ -83,7 +83,7 @@
   "_note": "The history begins when the log was added, not when the module did. Earlier runs were overwritten in place and are not recoverable; they are not reconstructed here."
  },
  "reconciliation": {
-  "roster_vs_frozen_variance": -622,
+  "roster_vs_frozen_variance": -621,
   "balances": false,
   "reason_not_balanced": "expected; see governance/reconciliation.md"
  }
