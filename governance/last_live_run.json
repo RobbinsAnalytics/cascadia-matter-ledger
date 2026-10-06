@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-10-06T16:12:33+00:00",
+ "started_utc": "2026-10-06T16:36:24+00:00",
  "slice": {
   "court": "cand",
   "nature_of_suit_prefix": "190",
@@ -14,7 +14,7 @@
   },
   {
    "check": "quota remaining - hour",
-   "value": 0,
+   "value": 7,
    "expectation": null,
    "passed": null
   },
@@ -25,16 +25,188 @@
    "passed": null
   },
   {
+   "check": "quota windows present in the response",
+   "value": 3,
+   "expectation": 3,
+   "passed": true
+  },
+  {
+   "check": "quota windows blocked upstream",
+   "value": "none",
+   "expectation": "none",
+   "passed": true
+  },
+  {
    "check": "request budget for this run",
+   "value": 7,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "roster id floor (derived)",
+   "value": 68128452,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "roster top-up, newly created dockets",
    "value": 0,
    "expectation": null,
    "passed": null
+  },
+  {
+   "check": "dockets in roster",
+   "value": 337,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "  added this run",
+   "value": 0,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "roster extension stalled upstream",
+   "value": false,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "requests spent",
+   "value": 7,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "throttle waits absorbed",
+   "value": 0,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "timeout retries absorbed",
+   "value": 0,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "roster extension throttled",
+   "value": false,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "walk stopped early on rate limit",
+   "value": false,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "walk stopped early on upstream failure",
+   "value": false,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "dockets COMPLETED this run",
+   "value": 3,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "dockets still partial",
+   "value": 1,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "dockets complete, cumulative",
+   "value": 322,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "dockets still to walk",
+   "value": 15,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "entries derived this run",
+   "value": 104,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "docket watermark (nothing below is unseen)",
+   "value": 74734811,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "rows persisted this run",
+   "value": 104,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "EV-1 every entry has exactly one event type",
+   "value": 104,
+   "expectation": 104,
+   "passed": true
+  },
+  {
+   "check": "EV-2 no classification without leading text",
+   "value": 0,
+   "expectation": 0,
+   "passed": true
+  },
+  {
+   "check": "EV-3 UNCLASSIFIED rate percent",
+   "value": 87.5,
+   "expectation": null,
+   "passed": null
+  },
+  {
+   "check": "EV-4 empty descriptions retained",
+   "value": 82,
+   "expectation": 82,
+   "passed": true
   }
  ],
- "status": "skipped: no quota headroom in the binding window",
- "notes": [
-  "day=75 hour=0 minute=5; the hour window binds"
- ],
- "finished_utc": "2026-10-06T16:12:34+00:00",
+ "status": "ok",
+ "quota": {
+  "125/day": {
+   "used": 50,
+   "limit": 125,
+   "remaining": 75,
+   "blocked": false,
+   "reset_at": "2026-10-07T15:31:17.101344+00:00"
+  },
+  "50/hour": {
+   "used": 43,
+   "limit": 50,
+   "remaining": 7,
+   "blocked": false,
+   "reset_at": "2026-10-06T16:45:13.623866+00:00"
+  },
+  "5/min": {
+   "used": 0,
+   "limit": 5,
+   "remaining": 5,
+   "blocked": false,
+   "reset_at": null
+  }
+ },
+ "event_counts": {
+  "UNCLASSIFIED": 91,
+  "ORDER": 8,
+  "COMPLAINT": 3,
+  "SUMMONS": 1,
+  "MOTION": 1
+ },
+ "finished_utc": "2026-10-06T16:38:26+00:00",
+ "requests_made": 7,
  "passed": true
 }
