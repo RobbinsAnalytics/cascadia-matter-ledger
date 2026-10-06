@@ -601,10 +601,16 @@ the pipeline writes — not restated by hand.</p>
 <p class="chart-summary">A surface that has only ever shown green has demonstrated
 nothing. This pipeline has caught four defects <em>in itself</em>, every one of them a
 silent failure — nothing errored, and each would have under-collected or mis-stated while
-reporting success. Each row below is checkable in the repository's history.</p>
+reporting success. <strong>It has also missed three</strong>, and they are recorded with the
+same care: for nineteen days, from 17 September to 6 October 2026, it completed no
+successful run while every run described itself as the design working. No check found
+them. A reader noticed the page had stopped moving. Each fix is checkable in the
+repository's history, except the one marked, which lives in the scheduled task's own
+instructions.</p>
 
 <table class="incidents">
-<caption>Defects the module found in its own pipeline</caption>
+<caption>Defects in the pipeline — the first four found by the module itself, the last
+three by a reader</caption>
 <thead><tr><th scope="col">What was wrong</th><th scope="col">How it surfaced</th><th scope="col">Fixed in</th></tr></thead>
 <tbody>
 <tr><th scope="row">The watermark advanced past dockets whose rows were never written — 36 dockets marked done, zero rows persisted</th>
@@ -615,10 +621,25 @@ reporting success. Each row below is checkable in the repository's history.</p>
     <td>The run spent itself on 90-second backoffs for requests that could not succeed</td><td><code>5ef5234</code></td></tr>
 <tr><th scope="row">A tie-break in the matter-grain rule depended on row order, which a parallel query engine does not guarantee</th>
     <td><strong>The independent re-derivation disagreed with the build by one record in 1,370,419</strong></td><td><code>317d827</code></td></tr>
+<tr><th scope="row">A run that could not get quota was recorded as ordinary pacing. Twelve consecutive runs skipped; the two whose readings survive saw every window at zero. The note blamed the hourly limit whichever window bound, and the scheduled task's instructions called every skip the design working</th>
+    <td><strong>Not by any check.</strong> The last successful run stayed at 17 September for nineteen days, and a reader noticed</td><td><code>58e8ea8</code></td></tr>
+<tr><th scope="row">One slow response from the source ended the whole run. The entry walk survived only rate limits, although the roster had been made to survive any network failure in August</th>
+    <td>Three runs failed on 6 October; a test with the network mocked reproduced the exact error</td><td><code>58b81ff</code></td></tr>
+<tr><th scope="row">The page stopped following the record. The scheduled task's bare <code>python</code> resolved to a newly installed interpreter with no packages, so the pull ran and the page rebuild silently did not</th>
+    <td>The run log reached 1 October while the health record and the page stopped at 24 September</td><td>Not in this repository — the scheduled task now names its interpreter by path</td></tr>
 </tbody>
 </table>
 
 <div class="governance-note">
+<strong>The longest outage was the quietest.</strong> Nineteen days without a successful run,
+and the record called every one of them routine. Three separate faults — a quota the
+pipeline could not get, a source that timed out, and an interpreter that could not rebuild
+this page — each produced output indistinguishable from a healthy pipeline pacing itself.
+A stop is only honest if it says <em>why</em>. Each run now keeps what the source reported
+about its quota, names the window that bound it, and sets the spend against its own recorded
+use; a quota that is unreadable, blocked, or spent by something else fails a check instead
+of passing as pacing.
+<br><br>
 <strong>A rate-limit stop is a stop, not a failure, and the record says which it was.</strong>
 When the source's binding window has no headroom the run exits in seconds and names the
 window that bound it. That is the pipeline working as designed. The run log keeps stops,
