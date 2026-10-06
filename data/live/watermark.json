@@ -341,7 +341,7 @@
   74786611,
   74806610
  ],
- "runs": 54,
+ "runs": 55,
  "recovery_note": "Watermark reset twice on 2026-08-26: once for the persist-after-walk bug (W-02), once for the first-page-only bug (W-03). Both re-walks served from cache for page one; only additional pages cost quota.",
  "partial_dockets": {
   "71988022": "https://www.courtlistener.com/api/rest/v4/docket-entries/?cursor=cD00NDY1NjA1OTU%3D&docket=71988022"

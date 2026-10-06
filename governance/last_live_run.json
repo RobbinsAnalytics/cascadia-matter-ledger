@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-10-06T15:44:57+00:00",
+ "started_utc": "2026-10-06T16:12:33+00:00",
  "slice": {
   "court": "cand",
   "nature_of_suit_prefix": "190",
@@ -8,13 +8,13 @@
  "checks": [
   {
    "check": "quota remaining - day",
-   "value": 118,
+   "value": 75,
    "expectation": null,
    "passed": null
   },
   {
    "check": "quota remaining - hour",
-   "value": 43,
+   "value": 0,
    "expectation": null,
    "passed": null
   },
@@ -26,156 +26,15 @@
   },
   {
    "check": "request budget for this run",
-   "value": 43,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "roster id floor (derived)",
-   "value": 68128452,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "roster top-up, newly created dockets",
    "value": 0,
    "expectation": null,
    "passed": null
-  },
-  {
-   "check": "dockets in roster",
-   "value": 337,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "  added this run",
-   "value": 0,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "roster extension stalled upstream",
-   "value": false,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "requests spent",
-   "value": 43,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "throttle waits absorbed",
-   "value": 0,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "timeout retries absorbed",
-   "value": 0,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "roster extension throttled",
-   "value": false,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "walk stopped early on rate limit",
-   "value": false,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "walk stopped early on upstream failure",
-   "value": false,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "dockets COMPLETED this run",
-   "value": 21,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "dockets still partial",
-   "value": 1,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "dockets complete, cumulative",
-   "value": 319,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "dockets still to walk",
-   "value": 18,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "entries derived this run",
-   "value": 661,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "docket watermark (nothing below is unseen)",
-   "value": 74734811,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "rows persisted this run",
-   "value": 641,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "EV-1 every entry has exactly one event type",
-   "value": 661,
-   "expectation": 661,
-   "passed": true
-  },
-  {
-   "check": "EV-2 no classification without leading text",
-   "value": 0,
-   "expectation": 0,
-   "passed": true
-  },
-  {
-   "check": "EV-3 UNCLASSIFIED rate percent",
-   "value": 81.39,
-   "expectation": null,
-   "passed": null
-  },
-  {
-   "check": "EV-4 empty descriptions retained",
-   "value": 415,
-   "expectation": 415,
-   "passed": true
   }
  ],
- "status": "ok",
- "event_counts": {
-  "UNCLASSIFIED": 538,
-  "NOTICE": 32,
-  "ORDER": 25,
-  "MOTION": 16,
-  "RESPONSE": 16,
-  "COMPLAINT": 14,
-  "STIPULATION": 12,
-  "SUMMONS": 6,
-  "JUDGMENT": 1,
-  "ANSWER": 1
- },
- "finished_utc": "2026-10-06T15:55:42+00:00",
+ "status": "skipped: no quota headroom in the binding window",
+ "notes": [
+  "day=75 hour=0 minute=5; the hour window binds"
+ ],
+ "finished_utc": "2026-10-06T16:12:34+00:00",
  "passed": true
 }

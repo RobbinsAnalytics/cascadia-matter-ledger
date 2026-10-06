@@ -45,3 +45,4 @@
 {"started_utc": "2026-10-06T15:29:00+00:00", "finished_utc": "2026-10-06T15:29:45+00:00", "status": "failed", "passed": false, "checks_total": 1, "checks_failed": ["run completed without error"], "error": "The read operation timed out"}
 {"started_utc": "2026-10-06T15:31:25+00:00", "finished_utc": "2026-10-06T15:34:57+00:00", "status": "failed", "passed": false, "checks_total": 10, "checks_failed": ["run completed without error"], "error": "The read operation timed out"}
 {"started_utc": "2026-10-06T15:44:57+00:00", "finished_utc": "2026-10-06T15:55:42+00:00", "status": "ok", "passed": true, "checks_total": 26, "checks_failed": [], "error": null, "dockets_completed": 21, "entries_derived": 661, "rows_persisted": 641}
+{"started_utc": "2026-10-06T16:12:33+00:00", "finished_utc": "2026-10-06T16:12:34+00:00", "status": "skipped: no quota headroom in the binding window", "passed": true, "checks_total": 4, "checks_failed": [], "error": null}
