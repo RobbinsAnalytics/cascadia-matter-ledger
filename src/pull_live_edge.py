@@ -114,6 +114,7 @@ class Client:
         self._token = token
         self.requests_made = 0
         self.throttle_waits = 0
+        self.timeout_retries = 0
         self._last = 0.0
 
     def _raw(self, url, timeout=120, _retried=False):
@@ -142,6 +143,30 @@ class Client:
             self.throttle_waits += 1
             print("  throttled; waiting %ds then retrying once" % wait)
             time.sleep(wait)
+            self._last = time.monotonic()
+            return self._raw(url, timeout=timeout, _retried=True)
+        except (TimeoutError, urllib.error.URLError) as exc:
+            # A TRANSIENT NETWORK FAILURE GETS THE SAME ONE RETRY A 429 GETS.
+            # HTTPError is a URLError subclass but is caught above, so only a
+            # timeout or a connection-level failure reaches here.
+            #
+            # Measured 2026-10-06: CourtListener answered the usage endpoint
+            # in 0.2s, then 25s, then not inside 45s, within the same ten
+            # minutes. Three runs died on one slow response each -- two before
+            # reading the quota, one after persisting 20 rows -- and with ~49
+            # requests per run, a one-in-ten timeout rate makes a clean run
+            # roughly a one-in-two-hundred event. One bounded retry, counted
+            # and recorded, is the difference between a pipeline that can
+            # finish and one that cannot.
+            #
+            # Bounded at one, exactly like the 429 path. A second failure is
+            # raised, and the caller decides what that means.
+            if _retried:
+                raise
+            self.timeout_retries += 1
+            print("  network failure (%s); waiting 20s then retrying once"
+                  % (getattr(exc, "reason", None) or exc))
+            time.sleep(20)
             self._last = time.monotonic()
             return self._raw(url, timeout=timeout, _retried=True)
 
@@ -354,6 +379,7 @@ def main():
         roster_pages = 0
         throttled = False
         throttled_roster = False
+        walk_stalled = None
         # A ROSTER FAILURE IS NOT A RUN FAILURE, and it took three dead runs
         # to establish that. Cursor pagination over
         # nature_of_suit__istartswith=190 dies server-side the deeper it
@@ -492,7 +518,7 @@ def main():
         dockets_done = 0
         rows_written = 0
         for docket_id in worklist:
-            if client.requests_made >= budget or throttled:
+            if client.requests_made >= budget or throttled or walk_stalled:
                 break
             start_url = partial.get(str(docket_id)) or (
                 "%s/docket-entries/?docket=%d" % (API, docket_id))
@@ -500,6 +526,15 @@ def main():
                 data, cached = client.get(start_url)
             except RateLimited:
                 throttled = True
+                break
+            except (urllib.error.HTTPError, urllib.error.URLError,
+                    OSError) as exc:
+                # A WALK FAILURE IS NOT A RUN FAILURE either -- the rule the
+                # roster adopted on 2026-08-29, applied to the phase that never
+                # got it. The resume cursor is kept, nothing is advanced, and
+                # every row already persisted stays persisted.
+                partial[str(docket_id)] = start_url
+                walk_stalled = str(getattr(exc, "code", None) or exc)
                 break
             # W-03. A docket is DONE only when its entry list is exhausted.
             # 29 of the first 36 dockets have more than one page, and the
@@ -537,6 +572,11 @@ def main():
                     throttled = True
                     partial[str(docket_id)] = nxt
                     break
+                except (urllib.error.HTTPError, urllib.error.URLError,
+                        OSError) as exc:
+                    partial[str(docket_id)] = nxt
+                    walk_stalled = str(getattr(exc, "code", None) or exc)
+                    break
             if complete:
                 partial.pop(str(docket_id), None)
                 ingested.add(docket_id)
@@ -554,8 +594,15 @@ def main():
             run.setdefault("notes", []).append(
                 "stopped early: rate limited. Watermark preserved; the next "
                 "run resumes from it. No records lost.")
+        check("timeout retries absorbed", client.timeout_retries)
+        if walk_stalled:
+            run.setdefault("notes", []).append(
+                "stopped early: upstream failure during the walk (%s). Resume "
+                "cursor kept; every persisted row stands; the next run "
+                "continues from it." % walk_stalled)
         check("roster extension throttled", throttled_roster)
         check("walk stopped early on rate limit", throttled)
+        check("walk stopped early on upstream failure", bool(walk_stalled))
         check("dockets COMPLETED this run", dockets_done)
         check("dockets still partial", len(partial))
         check("dockets complete, cumulative", len(ingested))
@@ -603,6 +650,12 @@ def main():
             run["status"] = "failed"
         elif throttled:
             run["status"] = "stopped: rate limited"
+        elif walk_stalled:
+            # NOT "ok". It made progress and stopped short, and the module's
+            # own rule is that handling a failure is not the same as doing the
+            # work. NOT "failed" either: nothing broke that the next run
+            # does not simply pick up. Same shape as the rate-limit stop.
+            run["status"] = "stopped: upstream failure"
         else:
             run["status"] = "ok"
         finish(run, state, dockets_done, len(entries), event_counts)
