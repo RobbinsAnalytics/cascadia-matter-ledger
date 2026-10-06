@@ -14,9 +14,9 @@ not a lookup, and it is stated here rather than buried in a join.
 | Frozen baseline — matters in slice | **954** |
 | Frozen baseline — of those, still open | 384 |
 | Live edge — dockets on roster | **337** |
-| Live edge — dockets fully ingested | 322 |
-| Live edge — dockets partially ingested | 1 |
-| Live edge — docket entries derived | 17,273 |
+| Live edge — dockets fully ingested | 336 |
+| Live edge — dockets partially ingested | 0 |
+| Live edge — docket entries derived | 17,704 |
 
 **Variance, roster against frozen baseline: -617.**
 
@@ -50,20 +50,20 @@ that formats the field differently.
 
 | Event type | Entries |
 |---|---:|
-| `UNCLASSIFIED` | 12,104 |
-| `ORDER` | 1,516 |
-| `NOTICE` | 852 |
-| `MOTION` | 797 |
-| `RESPONSE` | 516 |
-| `STIPULATION` | 446 |
-| `SUMMONS` | 329 |
+| `UNCLASSIFIED` | 12,458 |
+| `ORDER` | 1,543 |
+| `NOTICE` | 865 |
+| `MOTION` | 805 |
+| `RESPONSE` | 520 |
+| `STIPULATION` | 457 |
+| `SUMMONS` | 335 |
 | `TRANSCRIPT` | 248 |
-| `COMPLAINT` | 238 |
+| `COMPLAINT` | 246 |
 | `DECLARATION` | 150 |
 | `ANSWER` | 61 |
 | `JUDGMENT` | 16 |
 
-**`UNCLASSIFIED` is 70.1% and that is a health metric, not a bug.**
+**`UNCLASSIFIED` is 70.4% and that is a health metric, not a bug.**
 Most of it is entries with no description text at all — RECAP holds
 the docket line without the document. They are retained and counted
 rather than dropped, because an entry with no text is still evidence
@@ -74,8 +74,8 @@ every denominator. See `docket-event-derivation.md` D-04 and D-05.
 
 | | |
 |---|---|
-| Started | 2026-10-06T16:36:24+00:00 |
-| Status | **ok** |
+| Started | 2026-10-06T16:55:56+00:00 |
+| Status | **stopped: rate limited** |
 | Assertions | 28, 0 failed |
 
 A run that stops early because the rate limit bound it is recorded as

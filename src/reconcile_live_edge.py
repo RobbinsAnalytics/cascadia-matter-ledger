@@ -37,6 +37,89 @@ SLICE_NOS = "190"
 SLICE_START = "2024-01-01"
 
 
+def variance_bridge(con):
+    """Attribute every unit of the roster-vs-frozen variance to a counted cause.
+
+    A variance stated as one number with four reasons in prose is a variance
+    nobody has reconciled. This joins the two sides case by case --
+    CourtListener's docket_number_core to the IDB's DOCKET, both a two-digit
+    year and a five-digit sequence within the district -- and counts each
+    reason, so the published figure carries its own breakdown and a residual
+    that should be zero.
+
+        variance = live - frozen
+                 = (after + other_code + absent)
+                   - (reopened + not_listed + double_counted)
+    """
+    frozen = con.sql("""
+        SELECT DOCKET, CAST(filed_date AS VARCHAR) FROM fact_matter
+        WHERE CIRCUIT = ? AND DISTRICT = ? AND nature_of_suit_code = ?
+          AND filed_date >= CAST(? AS DATE)
+    """, params=[CAND_CIRCUIT, CAND_DISTRICT, SLICE_NOS, SLICE_START]).fetchall()
+    in_idb = {d for (d,) in con.sql(
+        "SELECT DISTINCT DOCKET FROM fact_matter WHERE CIRCUIT = ? AND DISTRICT = ?",
+        params=[CAND_CIRCUIT, CAND_DISTRICT]).fetchall()}
+    freeze_end = max(f for _, f in frozen)[:10]
+
+    state = json.loads((LIVE / "watermark.json").read_text(encoding="utf-8"))
+    known = set(state.get("dockets_known", []))
+    meta = {}
+    for path in (LIVE / "cache").glob("*.json"):
+        try:
+            page = json.loads(path.read_text(encoding="utf-8"))
+        except ValueError:
+            continue
+        if not isinstance(page, dict):
+            continue
+        for r in page.get("results") or []:
+            if (isinstance(r, dict) and r.get("id") in known
+                    and r.get("docket_number_core")):
+                meta[r["id"]] = r
+    live = {r["docket_number_core"]: r for r in meta.values()}
+
+    slice_yy = int(SLICE_START[2:4])
+    matched_rows = [d for d, _ in frozen if d in live]
+    double_counted = len(matched_rows) - len(set(matched_rows))
+    frozen_only = [d for d, _ in frozen if d not in live]
+    reopened = [d for d in frozen_only if int(d[:2]) < slice_yy]
+    not_listed = [d for d in frozen_only if int(d[:2]) >= slice_yy]
+    fset = {d for d, _ in frozen}
+    live_only = {k: v for k, v in live.items() if k not in fset}
+    after = [k for k, v in live_only.items()
+             if (v.get("date_filed") or "") > freeze_end]
+    within = [k for k, v in live_only.items()
+              if (v.get("date_filed") or "") <= freeze_end]
+    other_code = [k for k in within if k in in_idb]
+    absent = [k for k in within if k not in in_idb]
+    no_meta = len(known) - len(meta)
+
+    rows = [
+        ("Live, filed after the frozen file ends (%s): the live edge is "
+         "ahead by design" % freeze_end, len(after)),
+        ("Live, in the IDB under another nature of suit", len(other_code)),
+        ("Live, not in the IDB at all", len(absent)),
+        ("Frozen, reopened cases the IDB dates by their refiling; "
+         "CourtListener keeps the original filing date", -len(reopened)),
+        ("Frozen, %s-or-later cases missing from the live roster"
+         % SLICE_START[:4], -len(not_listed)),
+        ("Frozen, two matters on one docket number, which the roster "
+         "lists once", -double_counted),
+    ]
+    if no_meta:
+        rows.append(("Roster dockets with no cached metadata, not "
+                     "attributable", no_meta))
+    variance = len(known) - len(frozen)
+    explained = sum(n for _, n in rows)
+    return {
+        "matched": len(set(matched_rows)),
+        "frozen_end": freeze_end,
+        "rows": [{"cause": c, "count": n} for c, n in rows],
+        "explained": explained,
+        "residual": variance - explained,
+        "not_listed_dockets": sorted(not_listed),
+    }
+
+
 def main():
     if not DB.exists():
         sys.exit("Run src/build_conformed.py first.")
@@ -56,6 +139,7 @@ def main():
         WHERE CIRCUIT = ? AND DISTRICT = ? AND nature_of_suit_code = ?
           AND filed_date >= CAST(? AS DATE) AND NOT is_closed AND is_latest_record
     """, params=[CAND_CIRCUIT, CAND_DISTRICT, SLICE_NOS, SLICE_START]).fetchone()[0]
+    bridge = variance_bridge(con)
     con.close()
 
     state = json.loads((LIVE / "watermark.json").read_text(encoding="utf-8"))
@@ -169,6 +253,8 @@ def main():
             "roster_vs_frozen_variance": variance,
             "balances": False,
             "reason_not_balanced": "expected; see governance/reconciliation.md",
+            "bridge": {k: v for k, v in bridge.items()
+                       if k != "not_listed_dockets"},
         },
     }
     (GOV / "health.json").write_text(json.dumps(health, indent=1),

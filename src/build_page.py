@@ -296,6 +296,43 @@ def table(tid, caption, headers, rows):
     return "".join(h)
 
 
+def render_bridge(rec, live, frozen):
+    """The variance, attributed. Empty when an older record carries no bridge."""
+    b = rec.get("bridge")
+    if not b:
+        return ""
+    body = ["<tr><th scope=\"row\">Live roster</th><td>%s</td></tr>" % fmt(live),
+            "<tr><th scope=\"row\">Frozen baseline, same slice</th><td>%s</td></tr>"
+            % fmt(frozen),
+            "<tr class=\"total\"><th scope=\"row\">Variance</th><td>%+d</td></tr>"
+            % rec["roster_vs_frozen_variance"]]
+    body += ["<tr><th scope=\"row\">%s</th><td>%+d</td></tr>"
+             % (html.escape(r["cause"]), r["count"]) for r in b["rows"]]
+    body.append("<tr class=\"total\"><th scope=\"row\">Unexplained residual</th>"
+                "<td>%+d</td></tr>" % b["residual"])
+
+    # The cause of the largest line was measured once, by lookup, and the
+    # evidence is committed. Read it rather than restating it here.
+    note = ""
+    ev_path = GOV / "roster-coverage-sample.json"
+    if ev_path.exists():
+        ev = json.loads(ev_path.read_text(encoding="utf-8"))
+        n, present = ev["sampled"], ev["present_but_unfiltered"]
+        note = (
+            "<p class=\"chart-summary\"><strong>The largest line is a collection "
+            "defect, not a gap in the source.</strong> Sampled %s: %d of %d of "
+            "those cases are in CourtListener. Their nature-of-suit field is "
+            "either blank or reads <code>Contract: Other</code> without the "
+            "<code>190</code> code, and the roster finds dockets by matching that "
+            "text, so it never sees them. Matching each docket number the "
+            "frozen file already lists closes the gap without re-defining "
+            "anything; until that runs, the line stays on this table.</p>"
+            % (html.escape(ev["measured"]), present, n))
+    return ("<table class=\"incidents bridge\"><caption>Why the live roster and "
+            "the frozen file differ: every unit of the variance, counted"
+            "</caption><tbody>%s</tbody></table>%s" % ("".join(body), note))
+
+
 def render(data, f, health):
     lr = health["last_run"]
     rh = health.get("run_history", {})
@@ -304,6 +341,7 @@ def render(data, f, health):
     le = health["live_edge"]
     fb = health["frozen_baseline"]
     rec = health["reconciliation"]
+    bridge_html = render_bridge(rec, le["roster_dockets"], fb["slice_matters"])
     ev = le["event_counts"]
     entries = le["entries_derived"]
     unclass_pct = round(100.0 * ev.get("UNCLASSIFIED", 0) / entries, 1)
@@ -342,6 +380,7 @@ def render(data, f, health):
         "partial": fmt(le["dockets_partial"]),
         "slice_matters": fmt(fb["slice_matters"]),
         "variance": "%+d" % rec["roster_vs_frozen_variance"],
+        "bridge_html": bridge_html,
         "runs": le["runs_total"],
         "status": html.escape(lr["status"]),
         "state_class": ("ok" if lr.get("status") == "ok"
@@ -596,6 +635,7 @@ the pipeline writes — not restated by hand.</p>
     <dt>Reconciliation variance</dt><dd>@@variance@@</dd>
   </dl>
 </div>
+@@bridge_html@@
 
 <h3>What has gone wrong, how it was caught, and what changed</h3>
 <p class="chart-summary">A surface that has only ever shown green has demonstrated

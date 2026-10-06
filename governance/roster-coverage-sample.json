@@ -1,0 +1,110 @@
+{
+ "measured": "2026-10-06",
+ "question": "Are the frozen-file cases missing from the live roster absent from CourtListener, or present and missed by the roster's nature_of_suit__istartswith=190 filter?",
+ "method": "Twelve dockets drawn from the missing set, four per filing year, fixed seed 20261006; one lookup each by court=cand and docket_number_core.",
+ "sampled": 12,
+ "in_courtlistener": 12,
+ "present_but_unfiltered": 12,
+ "nature_of_suit_values": [
+  "",
+  "Contract: Other"
+ ],
+ "dockets": [
+  {
+   "docket": "2403761",
+   "idb_filed_year": 2024,
+   "in_courtlistener": true,
+   "courtlistener_id": 68880932,
+   "date_filed": "2024-06-24",
+   "nature_of_suit": ""
+  },
+  {
+   "docket": "2400480",
+   "idb_filed_year": 2024,
+   "in_courtlistener": true,
+   "courtlistener_id": 70704855,
+   "date_filed": "2024-08-27",
+   "nature_of_suit": ""
+  },
+  {
+   "docket": "2407544",
+   "idb_filed_year": 2024,
+   "in_courtlistener": true,
+   "courtlistener_id": 69328496,
+   "date_filed": "2024-10-30",
+   "nature_of_suit": "Contract: Other"
+  },
+  {
+   "docket": "2402289",
+   "idb_filed_year": 2024,
+   "in_courtlistener": true,
+   "courtlistener_id": 68446652,
+   "date_filed": "2024-04-17",
+   "nature_of_suit": ""
+  },
+  {
+   "docket": "2505503",
+   "idb_filed_year": 2025,
+   "in_courtlistener": true,
+   "courtlistener_id": 70679350,
+   "date_filed": "2025-06-30",
+   "nature_of_suit": "Contract: Other"
+  },
+  {
+   "docket": "2510044",
+   "idb_filed_year": 2025,
+   "in_courtlistener": true,
+   "courtlistener_id": 71943203,
+   "date_filed": "2025-11-20",
+   "nature_of_suit": "Contract: Other"
+  },
+  {
+   "docket": "2504185",
+   "idb_filed_year": 2025,
+   "in_courtlistener": true,
+   "courtlistener_id": 70275138,
+   "date_filed": "2025-05-15",
+   "nature_of_suit": ""
+  },
+  {
+   "docket": "2510802",
+   "idb_filed_year": 2025,
+   "in_courtlistener": true,
+   "courtlistener_id": 72056891,
+   "date_filed": "2025-12-18",
+   "nature_of_suit": "Contract: Other"
+  },
+  {
+   "docket": "2602577",
+   "idb_filed_year": 2026,
+   "in_courtlistener": true,
+   "courtlistener_id": 72647540,
+   "date_filed": "2026-03-24",
+   "nature_of_suit": "Contract: Other"
+  },
+  {
+   "docket": "2600347",
+   "idb_filed_year": 2026,
+   "in_courtlistener": true,
+   "courtlistener_id": 72138998,
+   "date_filed": "2026-01-13",
+   "nature_of_suit": ""
+  },
+  {
+   "docket": "2601340",
+   "idb_filed_year": 2026,
+   "in_courtlistener": true,
+   "courtlistener_id": 72276795,
+   "date_filed": "2026-02-13",
+   "nature_of_suit": ""
+  },
+  {
+   "docket": "2600220",
+   "idb_filed_year": 2026,
+   "in_courtlistener": true,
+   "courtlistener_id": 73310041,
+   "date_filed": "2026-05-06",
+   "nature_of_suit": ""
+  }
+ ]
+}

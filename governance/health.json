@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-10-06T16:38:39+00:00",
+ "generated_utc": "2026-10-06T17:06:35+00:00",
  "module": "cascadia-matter-ledger",
  "frozen_baseline": {
   "as_of": "2026-08-26",
@@ -15,38 +15,38 @@
    "detail": "The read operation timed out",
    "cursor": "https://www.courtlistener.com/api/rest/v4/dockets/?court=cand&cursor=cD02ODI3MDg3Nw%3D%3D&date_filed__gte=2024-01-01&nature_of_suit__istartswith=190"
   },
-  "dockets_fully_ingested": 322,
-  "dockets_remaining": 15,
-  "dockets_partial": 1,
-  "entries_derived": 17273,
+  "dockets_fully_ingested": 336,
+  "dockets_remaining": 1,
+  "dockets_partial": 0,
+  "entries_derived": 17704,
   "event_counts": {
-   "UNCLASSIFIED": 12104,
-   "ORDER": 1516,
-   "NOTICE": 852,
-   "MOTION": 797,
-   "RESPONSE": 516,
-   "STIPULATION": 446,
-   "SUMMONS": 329,
+   "UNCLASSIFIED": 12458,
+   "ORDER": 1543,
+   "NOTICE": 865,
+   "MOTION": 805,
+   "RESPONSE": 520,
+   "STIPULATION": 457,
+   "SUMMONS": 335,
    "TRANSCRIPT": 248,
-   "COMPLAINT": 238,
+   "COMPLAINT": 246,
    "DECLARATION": 150,
    "ANSWER": 61,
    "JUDGMENT": 16
   },
-  "watermark": 74734811,
-  "runs_total": 56
+  "watermark": 74786611,
+  "runs_total": 57
  },
  "last_run": {
-  "started_utc": "2026-10-06T16:36:24+00:00",
-  "finished_utc": "2026-10-06T16:38:26+00:00",
-  "status": "ok",
+  "started_utc": "2026-10-06T16:55:56+00:00",
+  "finished_utc": "2026-10-06T17:04:06+00:00",
+  "status": "stopped: rate limited",
   "passed": true,
   "checks_total": 28,
   "checks_failed": [],
   "error": null
  },
  "run_history": {
-  "runs_recorded": 49,
+  "runs_recorded": 50,
   "history_started": "2026-08-28T18:26:59+00:00",
   "last_successful_run": {
    "started_utc": "2026-10-06T16:36:24+00:00",
@@ -79,13 +79,34 @@
    "rows_persisted": 104
   },
   "last_not_ok_run": {
-   "started_utc": "2026-10-06T16:12:33+00:00",
-   "finished_utc": "2026-10-06T16:12:34+00:00",
-   "status": "skipped: no quota headroom in the binding window",
+   "started_utc": "2026-10-06T16:55:56+00:00",
+   "finished_utc": "2026-10-06T17:04:06+00:00",
+   "status": "stopped: rate limited",
    "passed": true,
-   "checks_total": 4,
+   "checks_total": 28,
    "checks_failed": [],
-   "error": null
+   "error": null,
+   "requests_made": 29,
+   "quota": {
+    "125/day": {
+     "used": 57,
+     "remaining": 68,
+     "blocked": false
+    },
+    "50/hour": {
+     "used": 7,
+     "remaining": 43,
+     "blocked": false
+    },
+    "5/min": {
+     "used": 0,
+     "remaining": 5,
+     "blocked": false
+    }
+   },
+   "dockets_completed": 14,
+   "entries_derived": 431,
+   "rows_persisted": 431
   },
   "last_failed_run": {
    "started_utc": "2026-10-06T15:31:25+00:00",
@@ -103,6 +124,38 @@
  "reconciliation": {
   "roster_vs_frozen_variance": -617,
   "balances": false,
-  "reason_not_balanced": "expected; see governance/reconciliation.md"
+  "reason_not_balanced": "expected; see governance/reconciliation.md",
+  "bridge": {
+   "matched": 304,
+   "frozen_end": "2026-06-30",
+   "rows": [
+    {
+     "cause": "Live, filed after the frozen file ends (2026-06-30): the live edge is ahead by design",
+     "count": 20
+    },
+    {
+     "cause": "Live, in the IDB under another nature of suit",
+     "count": 0
+    },
+    {
+     "cause": "Live, not in the IDB at all",
+     "count": 13
+    },
+    {
+     "cause": "Frozen, reopened cases the IDB dates by their refiling; CourtListener keeps the original filing date",
+     "count": -10
+    },
+    {
+     "cause": "Frozen, 2024-or-later cases missing from the live roster",
+     "count": -639
+    },
+    {
+     "cause": "Frozen, two matters on one docket number, which the roster lists once",
+     "count": -1
+    }
+   ],
+   "explained": -617,
+   "residual": 0
+  }
  }
 }
