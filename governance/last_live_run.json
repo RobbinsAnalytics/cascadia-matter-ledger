@@ -1,5 +1,5 @@
 {
- "started_utc": "2026-10-06T16:36:24+00:00",
+ "started_utc": "2026-10-06T16:55:56+00:00",
  "slice": {
   "court": "cand",
   "nature_of_suit_prefix": "190",
@@ -8,13 +8,13 @@
  "checks": [
   {
    "check": "quota remaining - day",
-   "value": 75,
+   "value": 68,
    "expectation": null,
    "passed": null
   },
   {
    "check": "quota remaining - hour",
-   "value": 7,
+   "value": 43,
    "expectation": null,
    "passed": null
   },
@@ -38,7 +38,7 @@
   },
   {
    "check": "request budget for this run",
-   "value": 7,
+   "value": 43,
    "expectation": null,
    "passed": null
   },
@@ -74,13 +74,13 @@
   },
   {
    "check": "requests spent",
-   "value": 7,
+   "value": 29,
    "expectation": null,
    "passed": null
   },
   {
    "check": "throttle waits absorbed",
-   "value": 0,
+   "value": 1,
    "expectation": null,
    "passed": null
   },
@@ -98,7 +98,7 @@
   },
   {
    "check": "walk stopped early on rate limit",
-   "value": false,
+   "value": true,
    "expectation": null,
    "passed": null
   },
@@ -110,50 +110,50 @@
   },
   {
    "check": "dockets COMPLETED this run",
-   "value": 3,
+   "value": 14,
    "expectation": null,
    "passed": null
   },
   {
    "check": "dockets still partial",
-   "value": 1,
+   "value": 0,
    "expectation": null,
    "passed": null
   },
   {
    "check": "dockets complete, cumulative",
-   "value": 322,
+   "value": 336,
    "expectation": null,
    "passed": null
   },
   {
    "check": "dockets still to walk",
-   "value": 15,
+   "value": 1,
    "expectation": null,
    "passed": null
   },
   {
    "check": "entries derived this run",
-   "value": 104,
+   "value": 431,
    "expectation": null,
    "passed": null
   },
   {
    "check": "docket watermark (nothing below is unseen)",
-   "value": 74734811,
+   "value": 74786611,
    "expectation": null,
    "passed": null
   },
   {
    "check": "rows persisted this run",
-   "value": 104,
+   "value": 431,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-1 every entry has exactly one event type",
-   "value": 104,
-   "expectation": 104,
+   "value": 431,
+   "expectation": 431,
    "passed": true
   },
   {
@@ -164,32 +164,32 @@
   },
   {
    "check": "EV-3 UNCLASSIFIED rate percent",
-   "value": 87.5,
+   "value": 82.13,
    "expectation": null,
    "passed": null
   },
   {
    "check": "EV-4 empty descriptions retained",
-   "value": 82,
-   "expectation": 82,
+   "value": 289,
+   "expectation": 289,
    "passed": true
   }
  ],
- "status": "ok",
+ "status": "stopped: rate limited",
  "quota": {
   "125/day": {
-   "used": 50,
+   "used": 57,
    "limit": 125,
-   "remaining": 75,
+   "remaining": 68,
    "blocked": false,
    "reset_at": "2026-10-07T15:31:17.101344+00:00"
   },
   "50/hour": {
-   "used": 43,
+   "used": 7,
    "limit": 50,
-   "remaining": 7,
+   "remaining": 43,
    "blocked": false,
-   "reset_at": "2026-10-06T16:45:13.623866+00:00"
+   "reset_at": "2026-10-06T17:36:40.778361+00:00"
   },
   "5/min": {
    "used": 0,
@@ -199,14 +199,20 @@
    "reset_at": null
   }
  },
+ "notes": [
+  "stopped early: rate limited. Watermark preserved; the next run resumes from it. No records lost."
+ ],
  "event_counts": {
-  "UNCLASSIFIED": 91,
-  "ORDER": 8,
-  "COMPLAINT": 3,
-  "SUMMONS": 1,
-  "MOTION": 1
+  "UNCLASSIFIED": 354,
+  "ORDER": 27,
+  "NOTICE": 13,
+  "STIPULATION": 11,
+  "COMPLAINT": 8,
+  "MOTION": 8,
+  "SUMMONS": 6,
+  "RESPONSE": 4
  },
- "finished_utc": "2026-10-06T16:38:26+00:00",
- "requests_made": 7,
+ "finished_utc": "2026-10-06T17:04:06+00:00",
+ "requests_made": 29,
  "passed": true
 }
