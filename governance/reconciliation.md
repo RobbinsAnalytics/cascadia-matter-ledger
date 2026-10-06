@@ -13,12 +13,12 @@ not a lookup, and it is stated here rather than buried in a join.
 |---|---:|
 | Frozen baseline — matters in slice | **954** |
 | Frozen baseline — of those, still open | 384 |
-| Live edge — dockets on roster | **333** |
-| Live edge — dockets fully ingested | 184 |
+| Live edge — dockets on roster | **335** |
+| Live edge — dockets fully ingested | 298 |
 | Live edge — dockets partially ingested | 1 |
-| Live edge — docket entries derived | 9,893 |
+| Live edge — docket entries derived | 16,508 |
 
-**Variance, roster against frozen baseline: -621.**
+**Variance, roster against frozen baseline: -619.**
 
 ## It does not balance, and it is not supposed to
 
@@ -27,7 +27,7 @@ the reasons this one does not, in order of size:
 
 **1 · The roster is complete, and the gap is not a backlog.**
 `roster_complete` is `True`. The slice has been enumerated down to a
-derived id floor -- see `live-edge-design.md` W-05 -- so the 333 dockets
+derived id floor -- see `live-edge-design.md` W-05 -- so the 335 dockets
 on the roster are every docket in this slice the source will return. The
 variance below is therefore structural rather than a queue that drains,
 and it moves only as new cases are filed.
@@ -50,20 +50,20 @@ that formats the field differently.
 
 | Event type | Entries |
 |---|---:|
-| `UNCLASSIFIED` | 6,925 |
-| `ORDER` | 874 |
-| `MOTION` | 462 |
-| `NOTICE` | 434 |
-| `RESPONSE` | 328 |
-| `STIPULATION` | 240 |
-| `SUMMONS` | 182 |
-| `TRANSCRIPT` | 175 |
-| `COMPLAINT` | 135 |
-| `DECLARATION` | 90 |
-| `ANSWER` | 39 |
-| `JUDGMENT` | 9 |
+| `UNCLASSIFIED` | 11,475 |
+| `ORDER` | 1,483 |
+| `NOTICE` | 820 |
+| `MOTION` | 780 |
+| `RESPONSE` | 500 |
+| `STIPULATION` | 434 |
+| `SUMMONS` | 322 |
+| `TRANSCRIPT` | 248 |
+| `COMPLAINT` | 221 |
+| `DECLARATION` | 150 |
+| `ANSWER` | 60 |
+| `JUDGMENT` | 15 |
 
-**`UNCLASSIFIED` is 70.0% and that is a health metric, not a bug.**
+**`UNCLASSIFIED` is 69.5% and that is a health metric, not a bug.**
 Most of it is entries with no description text at all — RECAP holds
 the docket line without the document. They are retained and counted
 rather than dropped, because an entry with no text is still evidence
@@ -74,7 +74,7 @@ every denominator. See `docket-event-derivation.md` D-04 and D-05.
 
 | | |
 |---|---|
-| Started | 2026-09-10T03:49:37+00:00 |
+| Started | 2026-10-01T17:20:20+00:00 |
 | Status | **skipped: no quota headroom in the binding window** |
 | Assertions | 4, 0 failed |
 
