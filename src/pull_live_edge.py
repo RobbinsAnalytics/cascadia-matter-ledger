@@ -45,7 +45,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 LIVE = REPO / "data" / "live"
@@ -61,6 +61,11 @@ SLICE_START = "2024-01-01"
 # Leave this many requests unspent so a run never exhausts the daily budget
 # and never starves an interactive check.
 QUOTA_RESERVE = 25
+
+# How far the API's reported spend may exceed this pipeline's own recorded
+# spend before the difference is called somebody else's. Covers a stray
+# manual probe; anything larger than this is not explained by the module.
+ATTRIBUTION_SLACK = 10
 # Hard ceiling per run regardless of quota, so one run cannot consume the day.
 MAX_REQUESTS_PER_RUN = 55
 # Minimum seconds between requests. The documented limit is 5/minute, which is
@@ -114,6 +119,7 @@ class Client:
         self._token = token
         self.requests_made = 0
         self.throttle_waits = 0
+        self.timeout_retries = 0
         self._last = 0.0
 
     def _raw(self, url, timeout=120, _retried=False):
@@ -142,6 +148,30 @@ class Client:
             self.throttle_waits += 1
             print("  throttled; waiting %ds then retrying once" % wait)
             time.sleep(wait)
+            self._last = time.monotonic()
+            return self._raw(url, timeout=timeout, _retried=True)
+        except (TimeoutError, urllib.error.URLError) as exc:
+            # A TRANSIENT NETWORK FAILURE GETS THE SAME ONE RETRY A 429 GETS.
+            # HTTPError is a URLError subclass but is caught above, so only a
+            # timeout or a connection-level failure reaches here.
+            #
+            # Measured 2026-10-06: CourtListener answered the usage endpoint
+            # in 0.2s, then 25s, then not inside 45s, within the same ten
+            # minutes. Three runs died on one slow response each -- two before
+            # reading the quota, one after persisting 20 rows -- and with ~49
+            # requests per run, a one-in-ten timeout rate makes a clean run
+            # roughly a one-in-two-hundred event. One bounded retry, counted
+            # and recorded, is the difference between a pipeline that can
+            # finish and one that cannot.
+            #
+            # Bounded at one, exactly like the 429 path. A second failure is
+            # raised, and the caller decides what that means.
+            if _retried:
+                raise
+            self.timeout_retries += 1
+            print("  network failure (%s); waiting 20s then retrying once"
+                  % (getattr(exc, "reason", None) or exc))
+            time.sleep(20)
             self._last = time.monotonic()
             return self._raw(url, timeout=timeout, _retried=True)
 
@@ -321,23 +351,96 @@ def main():
         # requests that could not succeed. Reading only the limit you happen
         # to remember is not being rate-limit-aware.
         usage = client.usage()
-        day_left = usage.get("125/day", {}).get("remaining", 0)
-        hour_left = usage.get("50/hour", {}).get("remaining", 0)
-        minute_left = usage.get("5/min", {}).get("remaining", 0)
+        # KEEP WHAT THE API SAID, NOT THREE NUMBERS DERIVED FROM IT. Thirteen
+        # runs from 2026-09-18 to 10-01 read day=0 hour=0 minute=0 and kept
+        # nothing else, so whether the quota was spent, the account was
+        # blocked, or the endpoint was degraded is now unrecoverable. The
+        # response carries used / limit / remaining / blocked per window.
+        quota = {}
+        for rate in ("125/day", "50/hour", "5/min"):
+            row = usage.get(rate)
+            quota[rate] = (None if row is None else
+                           {k: row.get(k) for k in
+                            ("used", "limit", "remaining", "blocked",
+                             "reset_at")})
+        run["quota"] = quota
+        missing = [r for r, v in quota.items() if v is None]
+        blocked = [r for r, v in quota.items() if v and v.get("blocked")]
+
+        def left(rate):
+            return (quota[rate] or {}).get("remaining") or 0
+
+        day_left, hour_left = left("125/day"), left("50/hour")
+        minute_left = left("5/min")
         check("quota remaining - day", day_left)
         check("quota remaining - hour", hour_left)
         check("quota remaining - minute", minute_left)
+        # A window absent from the response used to be read as 0, which turns
+        # "could not read the quota" into "the quota is spent" -- a benign skip
+        # standing in for a broken input. It is a failed check now.
+        check("quota windows present in the response", 3 - len(missing), 3,
+              not missing)
+        check("quota windows blocked upstream", ", ".join(blocked) or "none",
+              "none", not blocked)
         budget = max(0, min(MAX_REQUESTS_PER_RUN,
                             day_left - QUOTA_RESERVE,
                             hour_left))
         check("request budget for this run", budget)
         if budget <= 0:
-            # Not a failure. The pipeline is designed to make bounded progress
-            # and this run has no room to make any. It says so and exits clean.
-            run["status"] = "skipped: no quota headroom in the binding window"
-            run["notes"] = ["day=%d hour=%d minute=%d; the hour window binds"
-                            % (day_left, hour_left, minute_left)]
-            finish(run, state, 0, 0, {})
+            # Name the window that ACTUALLY binds. The first version printed
+            # "the hour window binds" whatever the numbers said, so every
+            # day=0 skip blamed the hourly limit and nothing checked it.
+            binding = []
+            if day_left - QUOTA_RESERVE <= 0:
+                binding.append("day")
+            if hour_left <= 0:
+                binding.append("hour")
+            notes = ["day=%d hour=%d minute=%d; binding: %s"
+                     % (day_left, hour_left, minute_left,
+                        " and ".join(binding))]
+
+            # WHO SPENT IT. The API reports total use of the token; this
+            # pipeline's own spend is in run_history. The difference belongs
+            # to someone else -- another module on the same token, a manual
+            # probe, an upstream block. Aaron's question on 2026-10-06 was
+            # "why am I hitting a limit when this hasn't completed a run in a
+            # week", and until now the record could not answer it.
+            unexplained = []
+            for name, rate, hours in (("hour", "50/hour", 1),
+                                      ("day", "125/day", 24)):
+                if name not in binding or not quota[rate]:
+                    continue
+                used = quota[rate].get("used")
+                own, complete = own_requests(hours)
+                if used is None:
+                    continue
+                gap = used - own
+                notes.append(
+                    "%s window: %d used, %d by this pipeline's recorded runs, "
+                    "%d unattributed%s"
+                    % (name, used, own, max(0, gap),
+                       "" if complete else
+                       " (lower bound: some runs in the window predate "
+                       "request counting)"))
+                if complete and gap > ATTRIBUTION_SLACK:
+                    unexplained.append(name)
+            if unexplained:
+                check("quota spend attributable to this pipeline",
+                      "unattributed in: " + ", ".join(unexplained), "none",
+                      False)
+            run["notes"] = notes
+
+            if missing:
+                run["status"] = "skipped: quota unreadable"
+            elif blocked:
+                run["status"] = "skipped: blocked upstream"
+            elif unexplained:
+                run["status"] = "skipped: quota spent elsewhere"
+            else:
+                # Genuinely this pipeline's own pacing. Not a failure.
+                run["status"] = ("skipped: no quota headroom in the binding "
+                                 "window")
+            finish(run, state, 0, 0, {}, client.requests_made)
             return 0
 
         # ---- PHASE A: extend the docket roster --------------------------
@@ -354,6 +457,7 @@ def main():
         roster_pages = 0
         throttled = False
         throttled_roster = False
+        walk_stalled = None
         # A ROSTER FAILURE IS NOT A RUN FAILURE, and it took three dead runs
         # to establish that. Cursor pagination over
         # nature_of_suit__istartswith=190 dies server-side the deeper it
@@ -492,7 +596,7 @@ def main():
         dockets_done = 0
         rows_written = 0
         for docket_id in worklist:
-            if client.requests_made >= budget or throttled:
+            if client.requests_made >= budget or throttled or walk_stalled:
                 break
             start_url = partial.get(str(docket_id)) or (
                 "%s/docket-entries/?docket=%d" % (API, docket_id))
@@ -500,6 +604,15 @@ def main():
                 data, cached = client.get(start_url)
             except RateLimited:
                 throttled = True
+                break
+            except (urllib.error.HTTPError, urllib.error.URLError,
+                    OSError) as exc:
+                # A WALK FAILURE IS NOT A RUN FAILURE either -- the rule the
+                # roster adopted on 2026-08-29, applied to the phase that never
+                # got it. The resume cursor is kept, nothing is advanced, and
+                # every row already persisted stays persisted.
+                partial[str(docket_id)] = start_url
+                walk_stalled = str(getattr(exc, "code", None) or exc)
                 break
             # W-03. A docket is DONE only when its entry list is exhausted.
             # 29 of the first 36 dockets have more than one page, and the
@@ -537,6 +650,11 @@ def main():
                     throttled = True
                     partial[str(docket_id)] = nxt
                     break
+                except (urllib.error.HTTPError, urllib.error.URLError,
+                        OSError) as exc:
+                    partial[str(docket_id)] = nxt
+                    walk_stalled = str(getattr(exc, "code", None) or exc)
+                    break
             if complete:
                 partial.pop(str(docket_id), None)
                 ingested.add(docket_id)
@@ -554,8 +672,15 @@ def main():
             run.setdefault("notes", []).append(
                 "stopped early: rate limited. Watermark preserved; the next "
                 "run resumes from it. No records lost.")
+        check("timeout retries absorbed", client.timeout_retries)
+        if walk_stalled:
+            run.setdefault("notes", []).append(
+                "stopped early: upstream failure during the walk (%s). Resume "
+                "cursor kept; every persisted row stands; the next run "
+                "continues from it." % walk_stalled)
         check("roster extension throttled", throttled_roster)
         check("walk stopped early on rate limit", throttled)
+        check("walk stopped early on upstream failure", bool(walk_stalled))
         check("dockets COMPLETED this run", dockets_done)
         check("dockets still partial", len(partial))
         check("dockets complete, cumulative", len(ingested))
@@ -603,16 +728,23 @@ def main():
             run["status"] = "failed"
         elif throttled:
             run["status"] = "stopped: rate limited"
+        elif walk_stalled:
+            # NOT "ok". It made progress and stopped short, and the module's
+            # own rule is that handling a failure is not the same as doing the
+            # work. NOT "failed" either: nothing broke that the next run
+            # does not simply pick up. Same shape as the rate-limit stop.
+            run["status"] = "stopped: upstream failure"
         else:
             run["status"] = "ok"
-        finish(run, state, dockets_done, len(entries), event_counts)
+        finish(run, state, dockets_done, len(entries), event_counts,
+               client.requests_made)
         return 0
 
     except RateLimited as exc:
         run["status"] = "stopped: rate limited"
         run["notes"] = ["throttled before any work; nothing lost"]
         check("stopped early on rate limit", True)
-        finish(run, state, 0, 0, {})
+        finish(run, state, 0, 0, {}, client.requests_made)
         return 0
 
     except (urllib.error.HTTPError, urllib.error.URLError, OSError) as exc:
@@ -620,9 +752,39 @@ def main():
         run["status"] = "failed"
         run["error"] = str(detail)
         check("run completed without error", False, True, False)
-        finish(run, state, 0, 0, {})
+        finish(run, state, 0, 0, {}, client.requests_made)
         print("\nRUN FAILED: %s" % detail)
         return 1
+
+
+def own_requests(hours):
+    """Requests this pipeline's recorded runs spent in the last `hours`.
+
+    Returns (total, complete). `complete` is False when any run in the window
+    predates request counting, which makes the total a lower bound -- and a
+    lower bound must never be used to accuse anything else of the spend.
+    """
+    path = GOV / "run_history.jsonl"
+    if not path.exists():
+        return 0, True
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+    total, complete = 0, True
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        e = json.loads(line)
+        try:
+            t = datetime.fromisoformat(e.get("started_utc") or "")
+        except ValueError:
+            continue
+        if t < cutoff:
+            continue
+        n = e.get("requests_made")
+        if n is None:
+            complete = False
+        else:
+            total += n
+    return total, complete
 
 
 def append_history(run):
@@ -648,6 +810,14 @@ def append_history(run):
         "checks_failed": [c["check"] for c in run.get("checks", [])
                           if c.get("passed") is False],
         "error": run.get("error"),
+        # Both added 2026-10-06. Without request counts, a later skip cannot
+        # tell this pipeline's spend from anyone else's; without the quota
+        # snapshot, last_live_run.json is the only copy of what the API said
+        # and it is overwritten by the next run.
+        "requests_made": run.get("requests_made"),
+        "quota": {r: (None if v is None else
+                      {k: v.get(k) for k in ("used", "remaining", "blocked")})
+                  for r, v in (run.get("quota") or {}).items()} or None,
     }
     for c in run.get("checks", []):
         if c["check"] == "dockets COMPLETED this run":
@@ -669,8 +839,10 @@ def append_history(run):
     return True
 
 
-def finish(run, state, dockets, entries, event_counts):
+def finish(run, state, dockets, entries, event_counts, requests_made=None):
     run["finished_utc"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    if requests_made is not None:
+        run["requests_made"] = requests_made
     run["passed"] = all(c["passed"] for c in run["checks"]
                         if c["passed"] is not None)
     state["runs"] = state.get("runs", 0) + 1
